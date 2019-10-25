@@ -1,0 +1,8 @@
+{
+    "esversion": 5,
+    "globals": {
+        "$": false,
+        "mw": false,
+        "OO": false
+    }
+}

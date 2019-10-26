@@ -4,7 +4,7 @@ var config = {};
 config.script = {
 	// Advert to append to edit summaries
 	advert:  " ([[User:Evad37/rater.js|Rater]])",
-	version: "1.3.1"
+	version: "2.0.0"
 };
 // Preferences: globals vars added to users' common.js, or set to defaults if undefined
 config.prefs = {

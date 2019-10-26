@@ -31,6 +31,6 @@ $.when(
 		return;
 	}
 	// Otherwise, load the rest of the script
-	mw.loader.load( "https://www.mediawiki.org/w/index.php?title=User:Evad37/rater/app.js&action=raw&ctype=text/javascript" );
+	mw.loader.load( "https://en.wikipedia.org/w/index.php?title=User:Evad37/rater/app.js&action=raw&ctype=text/javascript" );
 });
 // </nowiki>

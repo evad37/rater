@@ -18,7 +18,6 @@ var LoadDialog = function LoadDialog( config ) {
 OO.inheritClass( LoadDialog, OO.ui.Dialog ); 
 
 LoadDialog.static.name = "loadDialog";
-// Specify a title statically (or, alternatively, with data passed to the opening() method).
 LoadDialog.static.title = "Loading Rater...";
 
 // Customize the initialize() function: This is where to add content to the dialog body and set up event handlers.

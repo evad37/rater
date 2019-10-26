@@ -1,9 +1,9 @@
 import config from "./config";
-import LoadDialog from "./LoadDialog";
 import {API} from "./util";
 import { parseTemplates, getWithRedirectTo } from "./Template";
 import getBanners from "./getBanners";
 import * as cache from "./cache";
+import windowManager from "./windowManager";
 
 var setupRater = function(clickEvent) {
 	if ( clickEvent ) {
@@ -15,25 +15,11 @@ var setupRater = function(clickEvent) {
 	var currentPage = mw.Title.newFromText(config.mw.wgPageName);
 	var talkPage = currentPage && currentPage.getTalkPage();
 	var subjectPage = currentPage && currentPage.getSubjectPage();
-    
-	var loadDialog = new LoadDialog({
-		size: "medium"
-	});
-
-	// Create and append a window manager, which will open and close the window.
-	var windowManager = new OO.ui.WindowManager();
-	$( document.body ).append( windowManager.$element );
-
-	// Add the window to the window manager using the addWindows() method.
-	windowManager.addWindows( [ loadDialog ] );
-
-	// Open the window!
-	var loadDialogWin = windowManager.openWindow( loadDialog );
-    
-	// Get lists of all banners (task 0)
+ 
+	// Get lists of all banners (task 1)
 	var bannersPromise = getBanners();
 
-	// Load talk page (task 1) 
+	// Load talk page (task 2)
 	var loadTalkPromise = API.get( {
 		action: "query",
 		prop: "revisions",
@@ -46,12 +32,8 @@ var setupRater = function(clickEvent) {
 		var wikitext = ( id < 0 ) ? "" : result.query.pages[id].revisions[0]["*"];
 		return wikitext;
 	});
-	loadTalkPromise.then(
-		function() { loadDialog.showTaskDone(1); },
-		function(code, jqxhr) { loadDialog.showTaskFailed(1, code, jqxhr); }
-	);
 
-	// Parse talk page for banners (task 2)
+	// Parse talk page for banners (task 3)
 	var parseTalkPromise = loadTalkPromise.then(wikitext => parseTemplates(wikitext, true)) // Get all templates
 		.then(templates => getWithRedirectTo(templates)) // Check for redirects
 		.then(templates => {
@@ -75,21 +57,14 @@ var setupRater = function(clickEvent) {
 					});
 			});
 		});
-	parseTalkPromise.then(
-		function() { loadDialog.showTaskDone(2); },
-		function(code, jqxhr) { loadDialog.showTaskFailed(2, code, jqxhr); }
-	);
 
-	// Retrieve and store TemplateData (task 3)
+	// Retrieve and store TemplateData (task 4)
 	var templateDataPromise = parseTalkPromise.then(templates => {
 		templates.forEach(template => template.setParamDataAndSuggestions());
 		return templates;
 	});
-	templateDataPromise.then(function(){
-		loadDialog.showTaskDone(3);
-	});
 
-	// Check if page is a redirect (task 4) - but don't error out if request fails
+	// Check if page is a redirect (task 5) - but don't error out if request fails
 	var redirectCheckPromise = API.getRaw(subjectPage.getPrefixedText())
 		.then(
 			// Success
@@ -103,15 +78,10 @@ var setupRater = function(clickEvent) {
 			// Failure (ignored)
 			function() { return null; }
 		);
-	redirectCheckPromise
-		.then(function(){
-			loadDialog.showTaskDone(4);
-		});
 
-	// Retrieve rating from ORES (task 5, only needed for articles)
+	// Retrieve rating from ORES (task 6, only needed for articles)
 	var shouldGetOres = ( config.mw.wgNamespaceNumber <= 1 );
 	if ( shouldGetOres ) {
-		$("#dialog-loading-5").show();
 		var latestRevIdPromise = currentPage.isTalkPage()
 			? $.Deferred().resolve(config.mw.wgRevisionId)
 			: 	API.get( {
@@ -148,61 +118,71 @@ var setupRater = function(clickEvent) {
 					return data.score.prediction;
 				});
 		});
-		oresPromise.then(
-			// Success: show success
-			function() {
-				loadDialog.showTaskDone(4);
-			},
-			// Failure: show failure, but still resolve promise (after 2 seconds)
-			function(code, jqxhr) {
-				loadDialog.showTaskFailed(4, code, jqxhr);
-				var waitPromise = $.Deferred();
-				setTimeout(waitPromise.resolve, 2000);
-				return waitPromise;
-			}
-		);
-	} else {
-		// // Set hidden task as done so progress bar can complete?
-		// loadDialog.showTaskDone(5);
 	}
+
+	// Open the load dialog
+	var isOpenedPromise = $.Deferred();
+	var loadDialogWin = windowManager.openWindow("loadDialog", {
+		promises: [
+			bannersPromise,
+			loadTalkPromise,
+			parseTalkPromise,
+			templateDataPromise,
+			redirectCheckPromise,
+			shouldGetOres && oresPromise
+		],
+		ores: shouldGetOres,
+		isOpened: isOpenedPromise
+	});
+
+	loadDialogWin.opened.then(isOpenedPromise.resolve);
+
 
 	$.when(
 		loadTalkPromise,
 		templateDataPromise,
 		redirectCheckPromise,
 		shouldGetOres && oresPromise
-	)
-		.then(
-			// All succeded
-			function(talkWikitext, banners, redirectTarget, oresPredicition ) {
-				var result = {
-					success: true,
-					talkpage: talkPage,
-					talkWikitext: talkWikitext,
-					banners: banners
-				};
-				if (redirectTarget) {
-					result.redirectTarget = redirectTarget;
-				}
-				if (oresPredicition) {
-					result.oresPredicition = oresPredicition;
-				}
-				windowManager.closeWindow(loadDialog, result);
-				cache.clearInvalidItems();
-			},
-			// There was a failure. Wait a few seconds, then close the dialog
-			() => setTimeout(()=>windowManager.closeWindow(loadDialog), 3000)
-		);
+	).then(
+		// All succeded
+		function(talkWikitext, banners, redirectTarget, oresPredicition ) {
+			var result = {
+				success: true,
+				talkpage: talkPage,
+				talkWikitext: talkWikitext,
+				banners: banners
+			};
+			if (redirectTarget) {
+				result.redirectTarget = redirectTarget;
+			}
+			if (oresPredicition) {
+				result.oresPredicition = oresPredicition;
+			}
+			windowManager.closeWindow("loadDialog", result);
+			
+		}
+	); // Any failures are handled by the loadDialog window itself
 
+	// On window closed, check data, and resolve/reject setupCompletedPromise
 	loadDialogWin.closed.then(function(data) {
 		if (data && data.success) {
+			// Got everything needed: Resolve promise with this data
 			setupCompletedPromise.resolve(data);
+		} else if (data && data.error) {
+			// There was an error: Reject promise with error code/info
+			setupCompletedPromise.reject(data.error.code, data.error.info);
 		} else {
-			setupCompletedPromise.reject();
+			// Window closed before completion: resolve promise without any data
+			setupCompletedPromise.resolve(null);
 		}
+		cache.clearInvalidItems();
 	});
 
-	setupCompletedPromise.then(data=>console.log("setup window closed", data));
+	// TESTING purposes only: log passed data to console
+	setupCompletedPromise.then(
+		data => console.log("setup window closed", data),
+		(code, info) => console.log("setup window closed with error", {code, info})
+	);
 
 	return setupCompletedPromise;
 };

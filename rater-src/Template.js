@@ -86,6 +86,9 @@ Template.prototype.getTitle = function() {
  * @return {Template[]} templates
 */
 var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-control-regex */
+	if (!wikitext) {
+		return [];
+	}
 	var strReplaceAt = function(string, index, char) {
 		return string.slice(0,index) + char + string.slice(index + 1);
 	};
@@ -218,6 +221,9 @@ var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-contro
  */
 var getWithRedirectTo = function(templates) {
 	var templatesArray = Array.isArray(templates) ? templates : [templates];
+	if (templatesArray.length === 0) {
+		return $.Deferred().resolve([]);
+	}
 
 	return API.get({
 		"action": "query",

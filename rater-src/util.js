@@ -20,30 +20,58 @@ API.getORES = function(revisionID) {
 };
 /* ---------- Raw wikitext ---------------------------------------------------------------------- */
 API.getRaw = function(page) {
-	var request = $.get("https:" + config.mw.wgServer + mw.util.getUrl(page, {action:"raw"}))
+	return $.get("https:" + config.mw.wgServer + mw.util.getUrl(page, {action:"raw"}))
 		.then(function(data) {
 			if ( !data ) {
 				return $.Deferred().reject("ok-but-empty");
 			}
-		}, function() {
-			var status = request.getResponseHeader("status");
-			return $.Deferred().reject("http", {textstatus: status || "unknown"});
+			return data;
 		});
-	return request;
 };
 
-var makeErrorMsg = function(code, jqxhr) {
-	var details = "";
-	if ( code === "http" && jqxhr.textStatus === "error" ) {
-		details = "HTTP error " + jqxhr.xhr.status;
-	} else if ( code === "http" ) {
-		details = "HTTP error: " + jqxhr.textStatus;
-	} else if ( code === "ok-but-empty" ) {
-		details = "Error: Got an empty response from the server";
-	} else {
-		details = "API error: " + code;
+var makeErrorMsg = function(first, second) {
+	var code, xhr, message;
+	if ( typeof first === "object" && typeof second === "string" ) {
+		// Errors from $.get being rejected (ORES & Raw wikitext)
+		var errorObj = first.responseJSON && first.responseJSON.error;
+		if ( errorObj ) {
+			// Got an api-specific error code/message
+			code = errorObj.code;
+			message = errorObj.message;
+		} else {
+			xhr = first;
+		}
+	} else if ( typeof first === "string" && typeof second === "object" ) {
+		// Errors from mw.Api object
+		var mwErrorObj = second.error;
+		if (mwErrorObj) {
+			// Got an api-specific error code/message
+			code = errorObj.code;
+			message = errorObj.info;
+		} else if (first === "ok-but-empty") {
+			code = null;
+			message = "Got an empty response from the server";
+		} else {
+			xhr = second && second.xhr;
+		}
 	}
-	return details;
+
+	if (code && message) {
+		return `API error ${code}: ${message}`;
+	} else if (message) {
+		return `API error: ${message}`;
+	} else if (xhr) {
+		return `HTTP error ${xhr.status}`;
+	} else if (
+		typeof first === "string" && first !== "error" &&
+		typeof second === "string" && second !== "error"
+	) {
+		return `Error ${first}: ${second}`;
+	} else if (typeof first === "string" && first !== "error") {
+		return `Error: ${first}`;
+	} else {
+		return "Unknown API error";
+	}
 };
 
 export {isAfterDate, API, makeErrorMsg};

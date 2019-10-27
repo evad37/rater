@@ -12,7 +12,9 @@ $.when(
 	// Resource loader modules
 	mw.loader.using([
 		"mediawiki.util", "mediawiki.api", "mediawiki.Title",
-		"oojs-ui-core", "oojs-ui-widgets", "oojs-ui-windows", "oojs-ui.styles.icons-interactions"
+		"oojs-ui-core", "oojs-ui-widgets", "oojs-ui-windows",
+		"oojs-ui.styles.icons-content", "oojs-ui.styles.icons-interactions",
+		"oojs-ui.styles.icons-moderation",
 	]),
 	// Page ready
 	$.ready

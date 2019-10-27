@@ -140,9 +140,8 @@ LoadDialog.prototype.getSetupProcess = function ( data ) {
 	data = data || {};
 	return LoadDialog.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
-			if (data.ores) {
-				this.setuptasks[5].toggle();
-			}
+			var showOresTask = !!data.ores;
+			this.setuptasks[5].toggle(showOresTask);
 			var taskPromises = data.ores ? data.promises : data.promises.slice(0, -1);
 			data.isOpened.then(() => this.addTaskPromiseHandlers(taskPromises));
 		}, this );
@@ -158,6 +157,20 @@ LoadDialog.prototype.getHoldProcess = function ( data ) {
 	}
 	// No need to wait if closed manually
 	return LoadDialog.super.prototype.getHoldProcess.call( this, data );
+};
+
+// Use the getTeardownProcess() method to perform actions whenever the dialog is closed. 
+LoadDialog.prototype.getTeardownProcess = function ( data ) {
+	return LoadDialog.super.prototype.getTeardownProcess.call( this, data )
+		.first( () => {
+		// Perform cleanup: reset labels
+			this.setuptasks.forEach( setuptask => {
+				var currentLabel = setuptask.getLabel();
+				setuptask.setLabel(
+					currentLabel.slice(0, currentLabel.indexOf("...")+3)
+				);
+			} );
+		}, this );
 };
 
 export default LoadDialog;

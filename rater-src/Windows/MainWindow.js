@@ -9,18 +9,16 @@ MainWindow.static.size = "large";
 MainWindow.static.actions = [
 	// Primary (top right):
 	{
+		label: "X", // not using an icon since color becomes inverted, i.e. white on light-grey
 		title: "Close (and discard any changes)",
 		flags: "primary",
-		label: new OO.ui.HtmlSnippet("Close <span style='font-weight:bold'>X</span>"), // not using an icon since color becomes inverted, i.e. white on light-grey
 	},
 	// Safe (top left)
 	{
-		label: "Help",
 		action: "help",
-		icon: "helpNotice",
 		flags: "safe",
+		label: "?", // not using icon, to mirror Close action
 		title: "help"
-		// no label, to mirror size of Close action
 	},
 	// Others (bottom)
 	{
@@ -49,8 +47,8 @@ MainWindow.prototype.initialize = function () {
 	// Create layouts
 	this.topBar = new OO.ui.PanelLayout( {
 		expanded: false,
-		framed: true,
-		padded: true
+		framed: false,
+		padded: false
 	} );
 	this.content = new OO.ui.PanelLayout( {
 		expanded: true,
@@ -81,20 +79,82 @@ MainWindow.prototype.initialize = function () {
 				data: "Option 3",
 				label: "Option Three"
 			}
-		]
+		],
+		$element: $("<div style='display:inline-block;width:100%;max-width:425px;'>"),
+		$overlay: this.$overlay,
 	} );
-	this.addProjectButton = new OO.ui.ButtonWidget( {
-		label: "Add",
-		icon: "add",
-		title: "Add project",
-		flags: "progressive"
+
+	this.setAllDropDown = new OO.ui.DropdownWidget( {
+		label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Set all...</span>"),
+		menu: { // FIXME: needs real data
+			items: [
+				new OO.ui.MenuSectionOptionWidget( {
+					label: "Classes"
+				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: "B",
+					label: "B"
+				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: "C",
+					label: "C"
+				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: "start",
+					label: "Start"
+				} ),
+				new OO.ui.MenuSectionOptionWidget( {
+					label: "Importances"
+				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: "top",
+					label: "Top"
+				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: "high",
+					label: "High"
+				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: "mid",
+					label: "Mid"
+				} )
+			]
+		},
+		$element: $("<span style=\"display:inline-block;width:auto\">"),
+		$overlay: this.$overlay,
 	} );
+
+	this.removeAllButton = new OO.ui.ButtonWidget( {
+		icon: "trash",
+		title: "Remove all",
+		flags: "destructive"
+	} );
+	this.clearAllButton = new OO.ui.ButtonWidget( {
+		icon: "cancel",
+		title: "Clear all",
+		flags: "destructive"
+	} );
+	this.bypassAllButton = new OO.ui.ButtonWidget( {
+		icon: "articleRedirect",
+		title: "Bypass all redirects"
+	} );
+	this.doAllButtons = new OO.ui.ButtonGroupWidget( {
+		items: [
+			this.removeAllButton,
+			this.clearAllButton,
+			this.bypassAllButton
+		],
+		$element: $("<span style='float:right;'>"),
+	} );
+
 	this.topBar.$element.append(
-		(new OO.ui.ActionFieldLayout(this.searchBox, this.addProjectButton)).$element
+		this.searchBox.$element,
+		this.setAllDropDown.$element,
+		this.doAllButtons.$element
 	);
 
 	// FIXME: this is placeholder content
-	this.content.$element.append( "<p>(No project banners yet)</p>" );
+	this.content.$element.append( "<span>(No project banners yet)</span>" );
 
 	this.$body.append( this.outerLayout.$element );
 };

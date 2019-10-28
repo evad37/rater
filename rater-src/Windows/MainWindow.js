@@ -1,3 +1,5 @@
+import BannerWidget from "./Components/BannerWidget";
+
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
 }
@@ -151,10 +153,10 @@ MainWindow.prototype.initialize = function () {
 		this.searchBox.$element,
 		this.setAllDropDown.$element,
 		this.doAllButtons.$element
-	);
+	).css("background","#ccc");
 
 	// FIXME: this is placeholder content
-	this.content.$element.append( "<span>(No project banners yet)</span>" );
+	// this.content.$element.append( "<span>(No project banners yet)</span>" );
 
 	this.$body.append( this.outerLayout.$element );
 };
@@ -171,9 +173,26 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 	return MainWindow.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
 			// TODO: Set up window based on data
-
+			this.banners = data.banners.map(bannerTemplate => new BannerWidget(bannerTemplate));
+			for (const banner of this.banners) {
+				this.content.$element.append(banner.$element);
+			}
+			this.talkWikitext = data.talkWikitext;
+			this.talkpage = data.talkpage;
 			this.updateSize();
 		}, this );
+};
+
+// Set up the window it is ready: attached to the DOM, and opening animation completed
+MainWindow.prototype.getReadyProcess = function ( data ) {
+	data = data || {};
+	return MainWindow.super.prototype.getReadyProcess.call( this, data )
+		.next( () => { // force labels to show by default
+			this.banners.forEach(banner => {
+				banner.parameterWidgets.forEach(param => param.focusInput()); 
+			});
+		}, this)
+		.next( () => this.searchBox.focus()); // search box is where we really ant focus to be
 };
 
 export default MainWindow;

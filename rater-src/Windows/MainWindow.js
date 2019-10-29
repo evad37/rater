@@ -187,12 +187,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 MainWindow.prototype.getReadyProcess = function ( data ) {
 	data = data || {};
 	return MainWindow.super.prototype.getReadyProcess.call( this, data )
-		.next( () => { // force labels to show by default
-			this.banners.forEach(banner => {
-				banner.parameterWidgets.forEach(param => param.focusInput()); 
-			});
-		}, this)
-		.next( () => this.searchBox.focus()); // search box is where we really want focus to be
+		.next( () => this.searchBox.focus() );
 };
 
 export default MainWindow;

@@ -99,22 +99,39 @@ function BannerWidget( template, config ) {
 		]
 	} );
 
-	this.parameterWidgets = this.template.parameters
+	var parameterWidgets = this.template.parameters
 		.filter(param => param.name !== "class" && param.name !== "importance")
 		.map(param => new ParameterWidget(param, this.template.paramData[param.name]));
 	// Limit how many parameters will be displayed initially
-	this.initialParameterLimit = 5;
+	var initialParameterLimit = 5;
 	// But only hide if there's more than one to hide (otherwise, it's not much of a space saving
 	// and just annoying for users)
-	var hideSomeParams = this.parameterWidgets.length > this.initialParameterLimit + 1;
+	var hideSomeParams = parameterWidgets.length > initialParameterLimit + 1;
+	if (hideSomeParams) {
+		parameterWidgets.forEach((parameterWidget, index) => {
+			parameterWidget.toggle(index < initialParameterLimit);
+		});
+	}
+	
 	this.showMoreParametersButton = new OO.ui.ButtonWidget({
-		label: "Show "+(this.parameterWidgets.length - this.initialParameterLimit)+" more paramters",
+		label: "Show "+(parameterWidgets.length - initialParameterLimit)+" more paramters",
 		framed: false,
+		$element: $("<span style='margin-bottom:0'>")
 	});
+
+	this.showAddParameterInputsButton = new OO.ui.ButtonWidget({
+		label: "Add paramter",
+		icon: "add",
+		framed: false,
+		$element: $("<span style='margin-bottom:0'>")
+	});
+
 	this.parameterWidgetsLayout = new OO.ui.HorizontalLayout( {
 		items: hideSomeParams
-			? [...this.parameterWidgets.slice(0,this.initialParameterLimit), this.showMoreParametersButton]
-			: this.parameterWidgets
+			? [ ...parameterWidgets,
+				this.showMoreParametersButton,
+				this.showAddParameterInputsButton ]
+			: [...parameterWidgets, this.showAddParameterInputsButton ]
 	} );
 
 	this.addParameterNameInput = new SuggestionLookupTextInputWidget({
@@ -155,7 +172,7 @@ function BannerWidget( template, config ) {
 	this.addParameterLayout = new OO.ui.FieldLayout(this.addParameterControls, {
 		label: "Add parameter:",
 		align: "top"
-	});
+	}).toggle(false);
 	// And another hack
 	this.addParameterLayout.$element.find(".oo-ui-fieldLayout-messages").css({
 		"clear": "both",
@@ -171,27 +188,36 @@ function BannerWidget( template, config ) {
 	
 	this.$element.append(this.layout.$element, $("<hr>"));
 
+	this.parameterWidgetsLayout.aggregate.call(this.parameterWidgetsLayout, {"delete": "parameterDelete"} );
+	this.parameterWidgetsLayout.connect(this, {"parameterDelete": "onParameterDelete"} );
 	this.showMoreParametersButton.connect( this, { "click": "showMoreParameters" } );
+	this.showAddParameterInputsButton.connect( this, { "click": "showAddParameterInputs" } );
 	this.addParameterButton.connect(this, { "click": "onParameterAdd" });
 	this.addParameterNameInput.connect(this, { "change": "onAddParameterNameChange"});
 	this.addParameterValueInput.connect(this, { "change": "onAddParameterValueChange"});
 }
 OO.inheritClass( BannerWidget, OO.ui.Widget );
 
+BannerWidget.prototype.onParameterDelete = function ( itemWidget ) {
+	this.parameterWidgetsLayout.removeItems( [ itemWidget ] );
+};
+
 BannerWidget.prototype.showMoreParameters = function() {
 	this.parameterWidgetsLayout
-		.removeItems([this.showMoreParametersButton])
-		.addItems(
-			this.parameterWidgets.slice(this.initialParameterLimit),
-			this.initialParameterLimit
-		);
+		.removeItems([this.showMoreParametersButton]);
+	this.parameterWidgetsLayout.forEach(parameterWidget => parameterWidget.toggle(true));
+};
+
+BannerWidget.prototype.showAddParameterInputs = function() {
+	this.parameterWidgetsLayout.removeItems([this.showAddParameterInputsButton]);
+	this.addParameterLayout.toggle(true);
 };
 
 BannerWidget.prototype.getAddParametersInfo = function(nameInputVal, valueInputVal) {
 	var name = nameInputVal && nameInputVal.trim() || this.addParameterNameInput.getValue().trim();
 	var paramAlreadyIncluded = name === "class" ||
 		name === "importance" ||
-		this.parameterWidgets.some(paramWidget => paramWidget.parameter.name === name);
+		this.parameterWidgetsLayout.items.some(paramWidget => paramWidget.parameter && paramWidget.parameter.name === name);
 	var value = valueInputVal && valueInputVal.trim() || this.addParameterValueInput.getValue().trim();
 	var autovalue = name && this.template.paramData[name] && this.template.paramData[name].autovalue || null;
 	return {
@@ -241,7 +267,6 @@ BannerWidget.prototype.onParameterAdd = function() {
 		},
 		this.template.paramData[name]
 	);
-	this.parameterWidgets.push(newParameter);
 	this.parameterWidgetsLayout.addItems([newParameter]);
 	this.addParameterNameInput.setValue("");
 	this.addParameterValueInput.setValue("");

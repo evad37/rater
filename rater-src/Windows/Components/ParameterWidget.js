@@ -150,6 +150,7 @@ function ParameterWidget( parameter, paramData, config ) {
     
 	this.editButton.connect( this, { "click": "onEditClick" } );
 	this.confirmButton.connect( this, { "click": "onConfirmClick" } );
+	this.deleteButton.connect( this, { "click": "onDeleteClick" } );
 }
 OO.inheritClass( ParameterWidget, OO.ui.Widget );
 
@@ -164,6 +165,10 @@ ParameterWidget.prototype.onConfirmClick = function() {
 	this.fullLabel.setLabel(this.parameter.name + " = " + this.parameter.value);
 	this.readLayout.toggle(true);
 	this.editLayout.toggle(false);
+};
+
+ParameterWidget.prototype.onDeleteClick = function() {
+	this.emit("delete");
 };
 
 ParameterWidget.prototype.focusInput = function() {

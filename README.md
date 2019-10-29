@@ -24,8 +24,6 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 ## TODO
  - [ ] Finish writing app (min viable product - same or better functionality than v1) 
     - OOUI window for the main dialog
-       - Delete a parameter
-       - Add a parameter
        - Delete a banner
        - Add a banner
        - Display ores prediction somewhere

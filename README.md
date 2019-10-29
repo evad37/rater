@@ -7,8 +7,7 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 - Version 2: Not yet written, but will likely be similar for the end user.
 
 ## Repository structure
-- `index.js` is the main entry point, written in ES5. This is published to [User:Evad37/rater.js](https://en.wikipedia.org/wiki/User:Evad37/rater.js)
-- `index-sandbox.js` is the equivalent entry point for the sandbox version of the script, also written in ES5. This is published to  [User:Evad37/rater/sandbox.js](https://en.wikipedia.org/wiki/User:Evad37/rater/sandbox.js)
+- `index.js` is the main entry point, written in ES5. This is published to [User:Evad37/rater.js](https://en.wikipedia.org/wiki/User:Evad37/rater.js) (when deploying), or  [User:Evad37/rater/sandbox.js](https://en.wikipedia.org/wiki/User:Evad37/rater/sandbox.js) (for sandbox testing of changes).
 - `rater-src\` contains the main source code for the app, split into modules, which may be written in ES6. Code here can assume that the ResourceLoader modules specified in the above files have been loaded and that the DOM is ready.
    - `App.js` is the entry point
    - Related code should be placed in the same module.
@@ -23,10 +22,16 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 - **uglifyjs** for minifying
 
 ## TODO
-
  - [ ] Finish writing app (min viable product - same or better functionality than v1) 
     - OOUI window for the main dialog
-    - ...etc...
+       - Delete a parameter
+       - Add a parameter
+       - Delete a banner
+       - Add a banner
+       - Display ores prediction somewhere
+       - Should there be shell template settings? If so, where?
+    - Save changes
+    - Show preview/changes
  - [ ] Investigate unit testing
     - Is node-based unit testing even possible, given the reliance on globals like `mw` and `OO`?
     - Look at how v1 is using QUnit unit testing. Maybe replicate or iterate on that.

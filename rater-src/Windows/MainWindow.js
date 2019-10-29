@@ -192,7 +192,7 @@ MainWindow.prototype.getReadyProcess = function ( data ) {
 				banner.parameterWidgets.forEach(param => param.focusInput()); 
 			});
 		}, this)
-		.next( () => this.searchBox.focus()); // search box is where we really ant focus to be
+		.next( () => this.searchBox.focus()); // search box is where we really want focus to be
 };
 
 export default MainWindow;

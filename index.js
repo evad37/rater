@@ -14,7 +14,7 @@ $.when(
 		"mediawiki.util", "mediawiki.api", "mediawiki.Title",
 		"oojs-ui-core", "oojs-ui-widgets", "oojs-ui-windows",
 		"oojs-ui.styles.icons-content", "oojs-ui.styles.icons-interactions",
-		"oojs-ui.styles.icons-moderation"
+		"oojs-ui.styles.icons-moderation", "oojs-ui.styles.icons-editing-core",
 	]),
 	// Page ready
 	$.ready
@@ -32,7 +32,9 @@ $.when(
 	) {
 		return;
 	}
-	// Otherwise, load the rest of the script
-	mw.loader.load( "https://en.wikipedia.org/w/index.php?title=User:Evad37/rater/app.js&action=raw&ctype=text/javascript" );
+	// Otherwise, load the rest of the script.
+	// Get the title using template substitution (so the same source file be used on both main and sandbox scripts)
+	var title = /* </nowiki> */ "{{subst:str crop|{{subst:FULLPAGENAMEE}}|3}}/app.js"; /* <nowiki> */
+	mw.loader.load( "https://en.wikipedia.org/w/index.php?title="+title+"&action=raw&ctype=text/javascript" );
 });
 // </nowiki>

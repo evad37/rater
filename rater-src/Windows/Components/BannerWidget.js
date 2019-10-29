@@ -36,10 +36,61 @@ function BannerWidget( template, config ) {
 	// Create a layout
 	this.layout = new OO.ui.FieldsetLayout();
 	
-	this.mainLabel = new OO.ui.LabelWidget({
+	// this.mainLabel = new OO.ui.LabelWidget({
+	// 	label: "{{" + this.template.getTitle().getMainText() + "}}",
+	// });
+
+	this.removeButton = new OO.ui.ButtonWidget( {
+		icon: "trash",
+		label: "Remove banner",
+		title: "Remove banner",
+		flags: "destructive",
+		$element: $("<div style=\"width:100%\">")
+	} );
+	this.clearButton = new OO.ui.ButtonWidget( {
+		icon: "cancel",
+		label: "Clear parameters",
+		title: "Clear parameters",
+		flags: "destructive",
+		$element: $("<div style=\"width:100%\">")
+	} );
+	this.bypassButton = new OO.ui.ButtonWidget( {
+		icon: "articleRedirect",
+		label: "Bypass redirect",
+		title: "Bypass redirect",
+		$element: $("<div style=\"width:100%\">")
+	} );
+	this.removeButton.$element.find("a").css("width","100%");
+	this.clearButton.$element.find("a").css("width","100%");
+	this.bypassButton.$element.find("a").css("width","100%");
+
+	this.titleButtonsGroup = new OO.ui.ButtonGroupWidget( {
+		items: template.redirectsTo
+			? [ this.removeButton,
+				this.clearButton,
+				this.bypassButton ]
+			: [ this.removeButton,
+				this.clearButton ],
+		$element: $("<span style='width:100%;'>"),
+	} );
+
+	this.mainLabelPopupButton = new OO.ui.PopupButtonWidget( {
 		label: "{{" + this.template.getTitle().getMainText() + "}}",
-		$element: $("<strong style='display:inline-block;width:48%;font-size: 110%;margin-right:0;padding-right:8px'>")
-	});
+		$element: $("<span style='display:inline-block;width:48%;margin-right:0;padding-right:8px'>"),
+		indicator:"down",
+		framed:false,
+		popup: {
+			$content: this.titleButtonsGroup.$element,
+			width: 200,
+			padded: false,
+			align: "force-right",
+			anchor: false
+		}
+	} );
+	this.mainLabelPopupButton.$element
+		.children("a").first().css({"font-size":"110%"})
+		.find("span.oo-ui-labelElement-label").css({"white-space":"normal"});
+
 	// Rating dropdowns
 	this.classDropdown = new OO.ui.DropdownWidget( {
 		label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Class</span>"),
@@ -91,9 +142,9 @@ function BannerWidget( template, config ) {
 		$element: $("<span style='display:inline-block;width:24%'>"),
 		$overlay: this.$overlay,
 	} );
-	this.ratingsDropdowns = new OO.ui.HorizontalLayout( {
+	this.titlelayout = new OO.ui.HorizontalLayout( {
 		items: [
-			this.mainLabel,
+			this.mainLabelPopupButton,
 			this.classDropdown,
 			this.importanceDropdown,
 		]
@@ -181,7 +232,7 @@ function BannerWidget( template, config ) {
 
 	// Add everything to the layout
 	this.layout.addItems([
-		this.ratingsDropdowns,
+		this.titlelayout,
 		this.parameterWidgetsLayout,
 		this.addParameterLayout
 	]);

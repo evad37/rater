@@ -65,7 +65,7 @@ function BannerWidget( template, config ) {
 	this.bypassButton.$element.find("a").css("width","100%");
 
 	this.titleButtonsGroup = new OO.ui.ButtonGroupWidget( {
-		items: template.redirectsTo
+		items: template.redirectTarget
 			? [ this.removeButton,
 				this.clearButton,
 				this.bypassButton ]

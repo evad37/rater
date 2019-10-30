@@ -238,7 +238,7 @@ var getWithRedirectTo = function(templates) {
 			result.query.redirects.forEach(function(redirect) {
 				var i = templatesArray.findIndex(template => template.getTitle().getPrefixedText() === redirect.from);
 				if (i !== -1) {
-					templatesArray[i].redirectsTo = mw.Title.newFromText(redirect.to);
+					templatesArray[i].redirectTarget = mw.Title.newFromText(redirect.to);
 				}
 			});
 		}

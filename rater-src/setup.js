@@ -39,19 +39,19 @@ var setupRater = function(clickEvent) {
 		.then(templates => {
 			return bannersPromise.then((allBanners) => { // Get list of all banner templates
 				return templates.filter(template => { // Filter out non-banners
-					var mainText = template.redirectTo
-						? template.redirectTo.getMainText()
+					var mainText = template.redirectTarget
+						? template.redirectTarget.getMainText()
 						: template.getTitle().getMainText();
 					return allBanners.withRatings.includes(mainText) || 
                     allBanners.withoutRatings.includes(mainText) ||
                     allBanners.wrappers.includes(mainText);
 				})
 					.map(function(template) { // Set wrapper target if needed
-						var mainText = template.redirectTo
-							? template.redirectTo.getMainText()
+						var mainText = template.redirectTarget
+							? template.redirectTarget.getMainText()
 							: template.getTitle().getMainText();
 						if (allBanners.wrappers.includes(mainText)) {
-							template.redirectsTo = mw.Title.newFromText("Template:Subst:" + mainText);
+							template.redirectTarget = mw.Title.newFromText("Template:Subst:" + mainText);
 						}
 						return template;
 					});

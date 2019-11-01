@@ -1,4 +1,8 @@
 import BannerWidget from "./Components/BannerWidget";
+import BannerListWidget from "./Components/BannerListWidget";
+import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextInputWidget";
+import * as cache from "../cache";
+import { Template, getWithRedirectTo } from "../Template";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -52,36 +56,25 @@ MainWindow.prototype.initialize = function () {
 		framed: false,
 		padded: false
 	} );
-	this.content = new OO.ui.PanelLayout( {
+
+	this.contentLayout = new OO.ui.PanelLayout( {
 		expanded: true,
 		padded: true,
 		scrollable: true
 	} );
+
 	this.outerLayout = new OO.ui.StackLayout( {
 		items: [
 			this.topBar,
-			this.content
+			this.contentLayout
 		],
 		continuous: true,
 		expanded: true
 	} );
 	// Create topBar content
-	this.searchBox = new OO.ui.ComboBoxInputWidget( {
+	this.searchBox = new SuggestionLookupTextInputWidget( {
 		placeholder: "Add a WikiProject...",
-		options: [
-			{ // FIXME: These are placeholders.
-				data: "Option 1",
-				label: "Option One"
-			},
-			{
-				data: "Option 2",
-				label: "Option Two"
-			},
-			{
-				data: "Option 3",
-				label: "Option Three"
-			}
-		],
+		suggestions: cache.read("bannerOptions"),
 		$element: $("<div style='display:inline-block;width:100%;max-width:425px;'>"),
 		$overlay: this.$overlay,
 	} );
@@ -155,15 +148,18 @@ MainWindow.prototype.initialize = function () {
 		this.doAllButtons.$element
 	).css("background","#ccc");
 
-	// FIXME: this is placeholder content
-	// this.content.$element.append( "<span>(No project banners yet)</span>" );
+	// Create content placeholder
+	this.bannerList = new BannerListWidget();
+	this.contentLayout.$element.append(this.bannerList.$element);
 
 	this.$body.append( this.outerLayout.$element );
+
+	this.searchBox.connect(this, {enter: "onSearchSelect" });
 };
 
 // Override the getBodyHeight() method to specify a custom height
 MainWindow.prototype.getBodyHeight = function () {
-	return this.topBar.$element.outerHeight( true ) + this.content.$element.outerHeight( true );
+	return this.topBar.$element.outerHeight( true ) + this.contentLayout.$element.outerHeight( true );
 };
 
 // Use getSetupProcess() to set up the window with data passed to it at the time 
@@ -173,10 +169,9 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 	return MainWindow.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
 			// TODO: Set up window based on data
-			this.banners = data.banners.map(bannerTemplate => new BannerWidget(bannerTemplate));
-			for (const banner of this.banners) {
-				this.content.$element.append(banner.$element);
-			}
+			this.bannerList.addItems(
+				data.banners.map(bannerTemplate => new BannerWidget(bannerTemplate))
+			);
 			this.talkWikitext = data.talkWikitext;
 			this.talkpage = data.talkpage;
 			this.updateSize();
@@ -188,6 +183,52 @@ MainWindow.prototype.getReadyProcess = function ( data ) {
 	data = data || {};
 	return MainWindow.super.prototype.getReadyProcess.call( this, data )
 		.next( () => this.searchBox.focus() );
+};
+
+MainWindow.prototype.onSearchSelect = function() {
+	var name = this.searchBox.getValue().trim();
+	if (!name) {
+		return;
+	}
+	var existingBanner = this.bannerList.items.find(banner => {
+		return (
+			banner.template.getTitle().getMainText() === name ||
+			banner.template.redirectTarget && banner.template.redirectTarget.getMainText() === name
+		);
+	});
+	if (existingBanner) {
+		// TODO: show error message
+		return;
+	}
+	if (!/^[Ww](?:P|iki[Pp]roject)/.test(name)) {
+		var message = new OO.ui.HtmlSnippet(
+			"<code>{{" + name + "}}</code> is not a recognised WikiProject banner.<br/>Do you want to continue?"
+		);
+		// TODO: ask for confirmation
+		console.log(message);
+	}
+	if (name === "WikiProject Disambiguation" && $("#ca-talk.new").length !== 0 && this.bannerList.items.length === 0) {
+		var noNewDabMessage = "New talk pages shouldn't be created if they will only contain the {{WikiProject Disambiguation}} banner. Continue?";
+		// TODO: ask for confirmation
+		console.log(noNewDabMessage);
+	}
+	// Create Template object
+	var template = new Template();
+	template.name = name;
+	getWithRedirectTo(template)
+		.then(function(template) {
+			return $.when(
+				template.setClassesAndImportances(),
+				template.setParamDataAndSuggestions()
+			).then(() => {
+				// Return the now-modified templates
+				return template;
+			});
+		})
+		.then(template => {
+			this.bannerList.addItems( [new BannerWidget(template)] );
+			this.updateSize();
+		});
 };
 
 export default MainWindow;

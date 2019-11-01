@@ -217,7 +217,7 @@ var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-contro
 
 /**
  * @param {Template|Template[]} templates
- * @return {Promise<Template[]>}
+ * @return {Promise<Template>|Promise<Template[]>}
  */
 var getWithRedirectTo = function(templates) {
 	var templatesArray = Array.isArray(templates) ? templates : [templates];
@@ -242,7 +242,7 @@ var getWithRedirectTo = function(templates) {
 				}
 			});
 		}
-		return templatesArray;
+		return Array.isArray(templates) ? templatesArray : templatesArray[0];
 	});
 };
 
@@ -270,8 +270,8 @@ Template.prototype.setParamDataAndSuggestions = function() {
 	
 	if ( self.paramData ) { return paramDataSet.resolve(); }
     
-	var prefixedText = self.redirectsTo
-		? self.redirectsTo.getPrefixedText()
+	var prefixedText = self.redirectTarget
+		? self.redirectTarget.getPrefixedText()
 		: self.getTitle().getPrefixedText();
 
 	var cachedInfo = cache.read(prefixedText + "-params");
@@ -406,6 +406,74 @@ Template.prototype.setParamDataAndSuggestions = function() {
 		);
 	
 	return paramDataSet;	
+};
+
+Template.prototype.setClassesAndImportances = function() {
+	var parsed = $.Deferred();
+	
+	if ( this.classes && this.importances ) {
+		return parsed.resolve();
+	}
+
+	var mainText = this.getTitle().getMainText();
+	
+	var cachedRatings = cache.read(mainText+"-ratings");
+	if (
+		cachedRatings &&
+		cachedRatings.value &&
+		cachedRatings.staleDate &&
+		cachedRatings.value.classes!=null &&
+		cachedRatings.value.importances!=null
+	) {
+		this.classes = cachedRatings.value.classes;
+		this.importances = cachedRatings.value.importances;
+		parsed.resolve();
+		if ( !isAfterDate(cachedRatings.staleDate) ) {
+			// Just use the cached data
+			return parsed;
+		} // else: Use the cache data for now, but also fetch new data from API
+	}
+	
+	var wikitextToParse = "";	
+	config.bannerDefaults.extendedClasses.forEach(function(classname, index) {
+		wikitextToParse += "{{" + mainText + "|class=" + classname + "|importance=" +
+		(config.bannerDefaults.extendedImportances[index] || "") + "}}/n";
+	});
+	
+	return API.get({
+		action: "parse",
+		title: "Talk:Sandbox",
+		text: wikitextToParse,
+		prop: "categorieshtml"
+	})
+		.then((result) => {
+			var redirectOrMainText = this.redirectTarget ? this.redirectTarget.getMainText() : mainText;
+			var catsHtml = result.parse.categorieshtml["*"];
+			var extendedClasses = config.bannerDefaults.extendedClasses.filter(function(cl) {
+				return catsHtml.indexOf(cl+"-Class") !== -1;
+			});
+			var defaultClasses = ( redirectOrMainText === "WikiProject Portals" )
+				? ["List"]
+				: config.bannerDefaults.classes;
+			var customClasses = config.customClasses[redirectOrMainText] || [];
+			this.classes = [].concat(
+				customClasses,
+				defaultClasses,
+				extendedClasses
+			);
+
+			this.importances = config.bannerDefaults.extendedImportances.filter(function(imp) {
+				return catsHtml.indexOf(imp+"-importance") !== -1;
+			});
+			cache.write(mainText+"-ratings",
+				{
+					classes: this.classes,
+					importances: this.importances
+				},
+				1
+			);
+			return true;
+		});
 };
 
 export {Template, parseTemplates, getWithRedirectTo};

@@ -57,11 +57,17 @@ var setupRater = function(clickEvent) {
 					});
 			});
 		});
-
-	// Retrieve and store TemplateData (task 4)
-	var templateDataPromise = parseTalkPromise.then(templates => {
-		templates.forEach(template => template.setParamDataAndSuggestions());
-		return templates;
+	
+	// Retrieve and store classes, importances, and TemplateData (task 4)
+	var templateDetailsPromise = parseTalkPromise.then(function(templates) {
+		// Wait for all promises to resolve
+		return $.when.apply(null, [
+			...templates.map(template => template.setClassesAndImportances()),
+			...templates.map(template => template.setParamDataAndSuggestions())
+		]).then(() => {
+			// Return the now-modified templates
+			return templates;
+		});
 	});
 
 	// Check if page is a redirect (task 5) - but don't error out if request fails
@@ -127,7 +133,7 @@ var setupRater = function(clickEvent) {
 			bannersPromise,
 			loadTalkPromise,
 			parseTalkPromise,
-			templateDataPromise,
+			templateDetailsPromise,
 			redirectCheckPromise,
 			shouldGetOres && oresPromise
 		],
@@ -140,7 +146,7 @@ var setupRater = function(clickEvent) {
 
 	$.when(
 		loadTalkPromise,
-		templateDataPromise,
+		templateDetailsPromise,
 		redirectCheckPromise,
 		shouldGetOres && oresPromise
 	).then(

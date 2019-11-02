@@ -39,12 +39,13 @@ var setupRater = function(clickEvent) {
 		.then(templates => {
 			return bannersPromise.then((allBanners) => { // Get list of all banner templates
 				return templates.filter(template => { // Filter out non-banners
+					if (template.isShellTemplate()) { return true; }
 					var mainText = template.redirectTarget
 						? template.redirectTarget.getMainText()
 						: template.getTitle().getMainText();
 					return allBanners.withRatings.includes(mainText) || 
                     allBanners.withoutRatings.includes(mainText) ||
-                    allBanners.wrappers.includes(mainText);
+					allBanners.wrappers.includes(mainText);
 				})
 					.map(function(template) { // Set wrapper target if needed
 						var mainText = template.redirectTarget
@@ -62,7 +63,7 @@ var setupRater = function(clickEvent) {
 	var templateDetailsPromise = parseTalkPromise.then(function(templates) {
 		// Wait for all promises to resolve
 		return $.when.apply(null, [
-			...templates.map(template => template.setClassesAndImportances()),
+			...templates.map(template => template.isShellTemplate() ? null : template.setClassesAndImportances()),
 			...templates.map(template => template.setParamDataAndSuggestions())
 		]).then(() => {
 			// Return the now-modified templates

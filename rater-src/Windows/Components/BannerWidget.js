@@ -33,6 +33,7 @@ function BannerWidget( template, config ) {
 	BannerWidget.super.call( this, config );
 
 	this.template = template;
+	this.isShellTemplate = template.isShellTemplate();
 
 	/* --- TITLE AND RATINGS --- */
 
@@ -139,17 +140,24 @@ function BannerWidget( template, config ) {
 		$overlay: this.$overlay,
 	} );
 	this.titleLayout = new OO.ui.HorizontalLayout( {
-		items: [
-			this.mainLabelPopupButton,
-			this.classDropdown,
-			this.importanceDropdown,
-		]
+		items: this.isShellTemplate
+			? [ this.mainLabelPopupButton ]
+			: [
+				this.mainLabelPopupButton,
+				this.classDropdown,
+				this.importanceDropdown,
+			]
 	} );
 
 	/* --- PARAMETERS LIST --- */
 
 	var parameterWidgets = this.template.parameters
-		.filter(param => param.name !== "class" && param.name !== "importance")
+		.filter(param => {
+			if ( this.isShellTemplate ) {
+				return param.name != "1";
+			}
+			return param.name !== "class" && param.name !== "importance";
+		})
 		.map(param => new ParameterWidget(param, this.template.paramData[param.name]));
 
 	this.parameterList = new ParameterListWidget( {
@@ -210,9 +218,21 @@ function BannerWidget( template, config ) {
 	this.$element.append(
 		this.titleLayout.$element,
 		this.parameterList.$element,
-		this.addParameterLayout.$element,
-		$("<hr>")
+		this.addParameterLayout.$element
 	);
+	if (!this.isShellTemplate) {
+		this.$element.append( $("<hr>") );
+	}
+
+	if (this.isShellTemplate) {
+		this.$element.css({
+			"background": "#eee",
+			"border-radius": "10px",
+			"padding": "0 10px 5px",
+			"margin-bottom": "12px",
+			"font-size": "92%"			
+		});
+	}
 
 	/* --- EVENT HANDLING --- */
 
@@ -232,6 +252,7 @@ BannerWidget.prototype.getAddParametersInfo = function(nameInputVal, valueInputV
 	var name = nameInputVal && nameInputVal.trim() || this.addParameterNameInput.getValue().trim();
 	var paramAlreadyIncluded = name === "class" ||
 		name === "importance" ||
+		(name === "1" && this.isShellTemplate) ||
 		this.parameterList.items.some(paramWidget => paramWidget.parameter && paramWidget.parameter.name === name);
 	var value = valueInputVal && valueInputVal.trim() || this.addParameterValueInput.getValue().trim();
 	var autovalue = name && this.template.paramData[name] && this.template.paramData[name].autovalue || null;

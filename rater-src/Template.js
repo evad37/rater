@@ -264,6 +264,13 @@ Template.prototype.getDataForParam = function(key, paraName) {
 	return data;
 };
 
+Template.prototype.isShellTemplate = function() {
+	var mainText = this.redirectTarget
+		? this.redirectTarget.getMainText()
+		: this.getTitle().getMainText();
+	return config.shellTemplates.includes(mainText);
+};
+
 Template.prototype.setParamDataAndSuggestions = function() {
 	var self = this;
 	var paramDataSet = $.Deferred();

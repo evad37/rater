@@ -10,6 +10,7 @@ function ParameterWidget( parameter, paramData, config ) {
 	// Make the input. Type can be checkbox, or dropdown, or text input,
 	// depending on number of allowed values in param data.
 	this.allowedValues = paramData && paramData.allowedValues || [];
+
 	// switch (true) {
 	// case this.allowedValues.length === 0:
 	// case parameter.value && !this.allowedValues.includes(parameter.value):
@@ -41,6 +42,9 @@ function ParameterWidget( parameter, paramData, config ) {
 	// 	break;
 	// }
 	// TODO: Use above logic, or something similar. For now, just create a ComboBox
+
+	/* --- EDIT PARAMETER LAYOUT --- */
+
 	this.input = new OO.ui.ComboBoxInputWidget( {
 		value: this.parameter.value,
 		// label: parameter.name + " =",
@@ -111,6 +115,8 @@ function ParameterWidget( parameter, paramData, config ) {
 	}).toggle();
 	this.editLayout.$element.find("label.oo-ui-inline-help").css({"margin": "-10px 0 5px 10px"});
 
+	/* --- READ (COLLAPSED) DISPLAY OF PARAMETER --- */
+
 	this.fullLabel = new OO.ui.LabelWidget({
 		label: this.parameter.name + " = " + this.parameter.value,
 		$element: $("<label style='margin: 0;'>")
@@ -137,6 +143,8 @@ function ParameterWidget( parameter, paramData, config ) {
 		$element: $("<span style='margin:0;width:unset;'>")
 	});
 
+	/* --- CONTAINER FOR BOTH LAYOUTS --- */
+
 	this.$element = $("<div>")
 		.css({
 			"width": "unset",
@@ -144,7 +152,8 @@ function ParameterWidget( parameter, paramData, config ) {
 			"border": "1px solid #ddd",
 			"border-radius": "10px",
 			"padding-left": "10px",
-			"margin": "0 8px 8px 0"
+			"margin": "0 8px 8px 0",
+			"background": "#fffe"
 		})
 		.append(this.readLayout.$element, this.editLayout.$element);
     

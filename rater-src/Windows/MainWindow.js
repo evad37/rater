@@ -4,6 +4,7 @@ import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextIn
 import * as cache from "../cache";
 import { Template, getWithRedirectTo } from "../Template";
 import {getBannerOptions} from "../getBanners";
+import appConfig from "../config";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -42,7 +43,6 @@ MainWindow.static.actions = [
 		label: "Show changes"
 	},
 	{
-		action: "cancel",
 		label: "Cancel"
 	}
 ];
@@ -51,117 +51,127 @@ MainWindow.static.actions = [
 MainWindow.prototype.initialize = function () {
 	// Call the parent method.
 	MainWindow.super.prototype.initialize.call( this );
-	// Create layouts
-	this.topBar = new OO.ui.PanelLayout( {
-		expanded: false,
-		framed: false,
-		padded: false
-	} );
-
-	this.contentLayout = new OO.ui.PanelLayout( {
-		expanded: true,
-		padded: true,
-		scrollable: true
-	} );
-
-	this.outerLayout = new OO.ui.StackLayout( {
-		items: [
-			this.topBar,
-			this.contentLayout
-		],
-		continuous: true,
-		expanded: true
-	} );
-	// Create topBar content
+	// this.outerLayout = new OO.ui.StackLayout( {
+	// 	items: [
+	// 		this.topBar,
+	// 		this.contentLayout
+	// 	],
+	// 	continuous: true,
+	// 	expanded: true
+	// } );
+	
+	/* --- TOP BAR --- */
+	
+	// Search box
 	this.searchBox = new SuggestionLookupTextInputWidget( {
 		placeholder: "Add a WikiProject...",
 		suggestions: cache.read("bannerOptions"),
-		$element: $("<div style='display:inline-block;width:100%;max-width:425px;'>"),
+		$element: $("<div style='display:inline-block;margin-right:-1px;width:calc(100% - 45px);'>"),
 		$overlay: this.$overlay,
 	} );
 	getBannerOptions().then(bannerOptions => this.searchBox.setSuggestions(bannerOptions));
+	this.addBannerButton = new OO.ui.ButtonWidget( {
+		icon: "add",
+		title: "Add",
+		flags: "progressive",
+		$element: $("<span style='float:right;margin:0'>"),
+	} );
+	var $searchContainer = $("<div style='display:inline-block;width: calc(100% - 220px);min-width: 220px;float:left'>")
+		.append(this.searchBox.$element, this.addBannerButton.$element);
 
+	// Set all classes/importances, in the style of a popup button with a menu.
+	// (Is actually a dropdown with a hidden label, because that makes the coding easier.)
 	this.setAllDropDown = new OO.ui.DropdownWidget( {
-		label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Set all...</span>"),
-		menu: { // FIXME: needs real data
+		icon: "tag",
+		label: "Set all...",
+		invisibleLabel: true,
+		menu: {
 			items: [
 				new OO.ui.MenuSectionOptionWidget( {
 					label: "Classes"
 				} ),
-				new OO.ui.MenuOptionWidget( {
-					data: "B",
-					label: "B"
-				} ),
-				new OO.ui.MenuOptionWidget( {
-					data: "C",
-					label: "C"
-				} ),
-				new OO.ui.MenuOptionWidget( {
-					data: "start",
-					label: "Start"
-				} ),
+				...appConfig.bannerDefaults.classes.map(classname => new OO.ui.MenuOptionWidget( {
+					data: {class: classname.toLowerCase()},
+					label: classname
+				} )
+				),
 				new OO.ui.MenuSectionOptionWidget( {
 					label: "Importances"
 				} ),
-				new OO.ui.MenuOptionWidget( {
-					data: "top",
-					label: "Top"
-				} ),
-				new OO.ui.MenuOptionWidget( {
-					data: "high",
-					label: "High"
-				} ),
-				new OO.ui.MenuOptionWidget( {
-					data: "mid",
-					label: "Mid"
+				...appConfig.bannerDefaults.importances.map(importance => new OO.ui.MenuOptionWidget( {
+					data: {importance: importance.toLowerCase()},
+					label: importance
 				} )
+				)
 			]
 		},
-		$element: $("<span style=\"display:inline-block;width:auto\">"),
+		$element: $("<span style=\"width:auto;display:inline-block;float:left;margin:0\" title='Set all...'>"),
 		$overlay: this.$overlay,
 	} );
 
+	// Remove all banners button
 	this.removeAllButton = new OO.ui.ButtonWidget( {
 		icon: "trash",
 		title: "Remove all",
 		flags: "destructive"
 	} );
+
+	// Clear all parameters button
 	this.clearAllButton = new OO.ui.ButtonWidget( {
 		icon: "cancel",
 		title: "Clear all",
 		flags: "destructive"
 	} );
+
+	// Bypass all redirects button
 	this.bypassAllButton = new OO.ui.ButtonWidget( {
 		icon: "articleRedirect",
 		title: "Bypass all redirects"
 	} );
-	this.doAllButtons = new OO.ui.ButtonGroupWidget( {
+
+	// Group the buttons together
+	this.menuButtons = new OO.ui.ButtonGroupWidget( {
 		items: [
 			this.removeAllButton,
 			this.clearAllButton,
 			this.bypassAllButton
 		],
-		$element: $("<span style='float:right;'>"),
+		$element: $("<span style='float:left;'>"),
 	} );
+	this.menuButtons.$element.prepend(this.setAllDropDown.$element);
 
+	// Put everything into a layout
+	this.topBar = new OO.ui.PanelLayout( {
+		expanded: false,
+		framed: false,
+		padded: false,
+		$element: $("<div style='position:fixed;width:100%;background:#ccc'>")
+	} );
 	this.topBar.$element.append(
-		this.searchBox.$element,
-		this.setAllDropDown.$element,
-		this.doAllButtons.$element
-	).css("background","#ccc");
+		$searchContainer,
+		//this.setAllDropDown.$element,
+		this.menuButtons.$element
+	);
 
-	// Create content placeholder
+	// Append to the default dialog header
+	this.$head.css({"height":"73px"}).append(this.topBar.$element);
+
+	/* --- CONTENT AREA --- */
+
+	// Banners added dynamically upon opening, so just need a layout with an empty list
 	this.bannerList = new BannerListWidget();
-	this.contentLayout.$element.append(this.bannerList.$element);
 
-	this.$body.append( this.outerLayout.$element );
+	this.$body.css({"top":"73px"}).append(this.bannerList.$element);
 
-	this.searchBox.connect(this, {enter: "onSearchSelect" });
+	/* --- EVENT HANDLING --- */
+
+	this.searchBox.connect(this, {"enter": "onSearchSelect" });
+	this.addBannerButton.connect(this, {"click": "onSearchSelect"});
 };
 
 // Override the getBodyHeight() method to specify a custom height
 MainWindow.prototype.getBodyHeight = function () {
-	return this.topBar.$element.outerHeight( true ) + this.contentLayout.$element.outerHeight( true );
+	return Math.max(200, this.bannerList.$element.outerHeight( true ));
 };
 
 // Use getSetupProcess() to set up the window with data passed to it at the time 

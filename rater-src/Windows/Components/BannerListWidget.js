@@ -7,6 +7,8 @@ var BannerListWidget = function BannerListWidget( config ) {
 		$group: this.$element
 	} );
 
+	this.$element.css({"padding":"20px 10px 16px 10px"});
+
 	this.aggregate( {
 		remove: "bannerRemove"
 	} );

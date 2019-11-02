@@ -139,7 +139,7 @@ var getBannersFromCache = function() {
  * Has side affect of adding/updating/clearing cache.
  * 
  * @returns {Promise<Object, Array>} banners object, bannerOptions object
- */
+ *
 var getBanners = () => getBannersFromCache().then(
 	// Success: pass through
 	(banners, options) => $.Deferred().resolve(banners, options),
@@ -150,5 +150,37 @@ var getBanners = () => getBannersFromCache().then(
 		return bannersPromise;
 	}
 );
+ */
 
-export default getBanners;
+/**
+ * Gets banner names, grouped by type (withRatings, withoutRatings, wrappers)
+ * @returns {Promise<Object>} {withRatings:string[], withoutRatings:string[], wrappers:string[]>}
+ */
+var getBannerNames = () => getBannersFromCache().then(
+	// Success: pass through (first param only)
+	banners => banners,
+	// Failure: get from Api, then cache them
+	() => {
+		var bannersPromise = getListOfBannersFromApi();
+		bannersPromise.then(cacheBanners);
+		return bannersPromise;
+	}
+);
+
+/**
+ * Gets banners as {data, label} objects, for use in our SuggestionLookupTextInputWidget
+ * component (or other OOUI widgets like OO.ui.ComboBoxInputWidget)
+ * @returns {Promise<Object[]>} Ratings as {data:string, label:string} objects
+ */
+var getBannerOptions = () => getBannersFromCache().then(
+	// Success: pass through (second param only)
+	(_banners, options) => options,
+	// Failure: get from Api, then cache them
+	() => {
+		var bannersPromise = getListOfBannersFromApi();
+		bannersPromise.then(cacheBanners);
+		return bannersPromise;
+	}
+);
+
+export {getBannerNames, getBannerOptions};

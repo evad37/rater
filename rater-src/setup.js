@@ -1,7 +1,7 @@
 import config from "./config";
 import {API} from "./util";
 import { parseTemplates, getWithRedirectTo } from "./Template";
-import getBanners from "./getBanners";
+import {getBannerNames} from "./getBanners";
 import * as cache from "./cache";
 import windowManager from "./windowManager";
 
@@ -17,7 +17,7 @@ var setupRater = function(clickEvent) {
 	var subjectPage = currentPage && currentPage.getSubjectPage();
  
 	// Get lists of all banners (task 1)
-	var bannersPromise = getBanners();
+	var bannersPromise = getBannerNames();
 
 	// Load talk page (task 2)
 	var loadTalkPromise = API.get( {

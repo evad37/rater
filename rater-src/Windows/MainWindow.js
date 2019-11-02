@@ -3,6 +3,7 @@ import BannerListWidget from "./Components/BannerListWidget";
 import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextInputWidget";
 import * as cache from "../cache";
 import { Template, getWithRedirectTo } from "../Template";
+import {getBannerOptions} from "../getBanners";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -78,6 +79,7 @@ MainWindow.prototype.initialize = function () {
 		$element: $("<div style='display:inline-block;width:100%;max-width:425px;'>"),
 		$overlay: this.$overlay,
 	} );
+	getBannerOptions().then(bannerOptions => this.searchBox.setSuggestions(bannerOptions));
 
 	this.setAllDropDown = new OO.ui.DropdownWidget( {
 		label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Set all...</span>"),

@@ -1,1 +1,3 @@
 node_modules
+# ignore builds - can be recreated by running `npm run build`
+dist/* 

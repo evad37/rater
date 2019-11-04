@@ -1,56 +1,56 @@
+import { normaliseYesNo, filterAndMap } from "../../util";
+
 function ParameterWidget( parameter, paramData, config ) {
 	// Configuration initialization
 	config = config || {};
 	// Call parent constructor
 	ParameterWidget.super.call( this, config );
     
-	this.parameter = parameter;
+	this.name = parameter.name;
+	this.value = parameter.value;
+	this.autofilled = parameter.autofilled;
 	this.paramData = paramData || {};
+	this.allowedValues = this.paramData.allowedValues || [];
+	this.isRequired = this.paramData.required;
+	this.isSuggested = this.paramData.suggested;
 
-	// Make the input. Type can be checkbox, or dropdown, or text input,
-	// depending on number of allowed values in param data.
-	this.allowedValues = paramData && paramData.allowedValues || [];
-
-	// switch (true) {
-	// case this.allowedValues.length === 0:
-	// case parameter.value && !this.allowedValues.includes(parameter.value):
-	// 	// Text input
-	// 	break;
-	// case 1:
-	// 	// Checkbox (labelled only when both checked)
-	// 	this.allowedValues = [null, ...this.allowedValues];
-	// 	/* ...falls through... */
-	// case 2:
-	// 	// Checkbox (labelled when both checked and not checked)
-	// 	this.input = new OO.ui.CheckboxMultioptionWidget( {
-	// 		data: parameter.value,
-	// 		selected: this.allowedValues.indexOf(parameter.value) === 1,
-	// 		label: $("<code>").text(parameter.value || "")
-	// 	} );
-	// 	break;
-	// default:
-	// 	// Dropdown
-	// 	this.input = new OO.ui.DropdownWidget( {
-	// 		menu: {
-	// 			items: this.allowedValues.map(allowedVal => new OO.ui.MenuOptionWidget({
-	// 				data: allowedVal,
-	// 				label: allowedVal
-	// 			}) )
-	// 		}
-	// 	} );
-	// 	this.input.getMenu().selectItemByData(parameter.value);
-	// 	break;
-	// }
-	// TODO: Use above logic, or something similar. For now, just create a ComboBox
+	// Make a checkbox if only 1 or 2 allowed values
+	switch(this.allowedValues.length) {	/* eslint-disable no-fallthrough */
+	case 1:
+		this.allowedValues[1] = null;
+		/* fall-through */
+	case 2:
+		var isFirstAllowedVal = (
+			this.allowedValues.indexOf( parameter.value ) === 0 ||
+				this.allowedValues.map(normaliseYesNo).indexOf( normaliseYesNo(parameter.value) ) === 0
+		);
+		var isSecondAllowedVal = (
+			this.allowedValues.indexOf( parameter.value || null ) === 1 ||
+				this.allowedValues.map(normaliseYesNo).indexOf( parameter.value ? normaliseYesNo(parameter.value) : null) === 1
+		);
+		var isIndeterminate = !isFirstAllowedVal && !isSecondAllowedVal;
+		this.checkbox = new OO.ui.CheckboxInputWidget( {
+			selected: isIndeterminate ? undefined : isFirstAllowedVal,
+			indeterminate: isIndeterminate ? true : undefined,
+			$element: $("<label style='margin:0 0 0 5px'>")
+		} );
+		break;
+	default:
+			// No checkbox
+	} /* eslint-enable no-fallthrough */
 
 	/* --- EDIT PARAMETER LAYOUT --- */
 
 	this.input = new OO.ui.ComboBoxInputWidget( {
-		value: this.parameter.value,
+		value: this.value,
 		// label: parameter.name + " =",
 		// labelPosition: "before",
-		options: this.allowedValues.map(val => {return {data: val, label:val}; }),
-		$element: $("<div style='width:calc(100% - 70px);margin-right:0;'>") // the 70px leaves room for buttons
+		options: filterAndMap(
+			this.allowedValues,
+			val => val!==null,
+			val => ({data: val, label:val})
+		),
+		$element: $("<div style='margin-bottom:0;'>")
 	} );
 	// Reduce the excessive whitespace/height
 	this.input.$element.find("input").css({
@@ -67,28 +67,37 @@ function ParameterWidget( parameter, paramData, config ) {
 		"min-height": "0"
 	});
 
-	//var description = this.paramData[parameter.name] && this.paramData[parameter.name].label && this.paramData[parameter.name].label.en;
-	// var paramName = new OO.ui.LabelWidget({
-	// 	label: "|" + parameter.name + "=",
-	// 	$element: $("<code>")
-	// });
-	this.deleteButton = new OO.ui.ButtonWidget({
-		icon: "clear",
-		framed: false,
-		flags: "destructive"
-	});
-	this.deleteButton.$element.find("a span").first().css({
-		"min-width": "unset",
-		"width": "16px"
-	});
-    
 	this.confirmButton = new OO.ui.ButtonWidget({
 		icon: "check",
+		label: "Done",
 		framed: false,
 		flags: "progressive",
 		$element: $("<span style='margin-right:0'>")
 	});
-	this.confirmButton.$element.find("a span").first().css({
+
+	this.cancelButton = new OO.ui.ButtonWidget({
+		icon: "undo",
+		label: "Cancel",
+		framed: false,
+	});
+
+	this.deleteButton = new OO.ui.ButtonWidget({
+		icon: this.isRequired ? "restore" : "trash",
+		label: this.isRequired ? "Required parameter" : "Delete",
+		framed: false,
+		flags: "destructive",
+		disabled: this.isRequired
+	});
+
+	this.editButtonControls = new OO.ui.ButtonGroupWidget({
+		items: [
+			this.confirmButton,
+			this.cancelButton,
+			this.deleteButton
+		],
+		$element: $("<span style='font-size:92%'>")
+	});
+	this.editButtonControls.$element.find("a span:first-child").css({
 		"min-width": "unset",
 		"width": "16px",
 		"margin-right": 0
@@ -97,8 +106,7 @@ function ParameterWidget( parameter, paramData, config ) {
 	this.editLayoutControls = new OO.ui.HorizontalLayout({
 		items: [
 			this.input,
-			this.confirmButton,
-			this.deleteButton
+			this.editButtonControls
 		],
 		//$element: $("<div style='width: 48%;margin:0;'>")
 	});
@@ -108,7 +116,7 @@ function ParameterWidget( parameter, paramData, config ) {
 	this.editLayoutControls.simulateLabelClick = () => true;
 
 	this.editLayout = new OO.ui.FieldLayout( this.editLayoutControls, {
-		label: this.parameter.name + " =",
+		label: this.name + " =",
 		align: "top",
 		help: this.paramData.description && this.paramData.description.en || false,
 		helpInline: true
@@ -118,9 +126,19 @@ function ParameterWidget( parameter, paramData, config ) {
 	/* --- READ (COLLAPSED) DISPLAY OF PARAMETER --- */
 
 	this.fullLabel = new OO.ui.LabelWidget({
-		label: this.parameter.name + " = " + this.parameter.value,
+		label:this.name +
+			(this.value
+				? " = " + this.value
+				: " "
+			),	
 		$element: $("<label style='margin: 0;'>")
 	});
+	this.autofilledIcon = new OO.ui.IconWidget( {
+		icon: "robot",
+		title: "Autofilled by Rater",
+		flags: "progressive",
+		$element: $("<span style='margin: 0 -5px 0 5px;min-width: 16px;width: 16px;'>")
+	} );
 	this.editButton = new OO.ui.ButtonWidget({
 		icon: "edit",
 		framed: false,
@@ -142,14 +160,19 @@ function ParameterWidget( parameter, paramData, config ) {
 		],
 		$element: $("<span style='margin:0;width:unset;'>")
 	});
+	if (this.checkbox) {
+		this.readLayout.addItems([this.checkbox], 1);
+	}
+	if (this.autofilled) {
+		this.readLayout.addItems([this.autofilledIcon], 1);
+	}
 
 	/* --- CONTAINER FOR BOTH LAYOUTS --- */
-
 	this.$element = $("<div>")
 		.css({
 			"width": "unset",
 			"display": "inline-block",
-			"border": "1px solid #ddd",
+			"border": this.autofilled ? "1px dashed #36c" : "1px solid #ddd",
 			"border-radius": "10px",
 			"padding-left": "10px",
 			"margin": "0 8px 8px 0",
@@ -159,7 +182,11 @@ function ParameterWidget( parameter, paramData, config ) {
     
 	this.editButton.connect( this, { "click": "onEditClick" } );
 	this.confirmButton.connect( this, { "click": "onConfirmClick" } );
+	this.cancelButton.connect( this, { "click": "onCancelClick" } );
 	this.deleteButton.connect( this, { "click": "onDeleteClick" } );
+	if (this.checkbox) {
+		this.checkbox.connect(this, {"change": "onCheckboxChange"} );
+	}
 }
 OO.inheritClass( ParameterWidget, OO.ui.Widget );
 
@@ -170,14 +197,90 @@ ParameterWidget.prototype.onEditClick = function() {
 };
 
 ParameterWidget.prototype.onConfirmClick = function() {
-	this.parameter.value = this.input.getValue();
-	this.fullLabel.setLabel(this.parameter.name + " = " + this.parameter.value);
+	this.setValue(
+		this.input.getValue()
+	);
+	this.readLayout.toggle(true);
+	this.editLayout.toggle(false);
+};
+
+ParameterWidget.prototype.onCancelClick = function() {
+	this.input.setValue(this.value);
 	this.readLayout.toggle(true);
 	this.editLayout.toggle(false);
 };
 
 ParameterWidget.prototype.onDeleteClick = function() {
 	this.emit("delete");
+};
+
+ParameterWidget.prototype.onCheckboxChange = function(isSelected, isIndeterminate) {
+	if (isIndeterminate) {
+		return;
+	}
+	if (isSelected) {
+		this.setValue(this.allowedValues[0]);
+	} else {
+		this.setValue(this.allowedValues[1]);
+	}
+};
+
+ParameterWidget.prototype.setValue = function(val) {
+	// Turn off autofill stylings/icon
+	this.autofilled = false;
+	this.autofilledIcon.toggle(false);
+	this.$element.css({"border": "1px solid #ddd"});
+
+	// Update the stored value
+	this.value = val;
+
+	// Update the input value for edit mode
+	this.input.setValue(this.value);
+
+	
+	// Updated the label for read mode
+	this.fullLabel.setLabel(
+		this.name +
+		(this.value
+			? " = " + this.value
+			: ""
+		)
+	);
+
+	// Update the checkbox (if there is one)
+	if (this.checkbox) {
+		var isFirstAllowedVal = (
+			this.allowedValues.indexOf( val ) === 0 ||
+			this.allowedValues.map(normaliseYesNo).indexOf( normaliseYesNo(val) ) === 0
+		);
+		var isSecondAllowedVal = (
+			this.allowedValues.indexOf( val || null ) === 1 ||
+			this.allowedValues.map(normaliseYesNo).indexOf( val ? normaliseYesNo(val) : null) === 1
+		);
+		var isIndeterminate = !isFirstAllowedVal && !isSecondAllowedVal;
+		this.checkbox.setIndeterminate(isIndeterminate, true);
+		if (!isIndeterminate) {
+			var isSelected = isFirstAllowedVal;
+			this.checkbox.setSelected(isSelected, true);
+		}
+	}
+
+	// Emit a change event
+	this.emit("change");
+};
+
+ParameterWidget.prototype.setAutofilled = function() {
+	if (this.autofilled) {
+		return;
+	}
+	this.autofilled = true;
+	this.autofilledIcon.toggle(true);
+	this.readLayout.addItems([this.autofilledIcon], 1);
+	this.$element.css({"border": "1px dashed #36c"});
+};
+
+ParameterWidget.prototype.makeWikitext = function(pipeStyle, equalsStyle) {
+	return pipeStyle + this.name + equalsStyle + (this.value||"");
 };
 
 ParameterWidget.prototype.focusInput = function() {

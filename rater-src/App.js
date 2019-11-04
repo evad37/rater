@@ -5,6 +5,7 @@ import { makeErrorMsg } from "./util";
 import windowManager from "./windowManager";
 
 (function App() {
+	// <nowiki>
 	console.log("Rater's App.js is running...");
 
 	mw.util.addCSS(diffStyles);

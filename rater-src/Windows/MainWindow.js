@@ -2,9 +2,10 @@ import BannerWidget from "./Components/BannerWidget";
 import BannerListWidget from "./Components/BannerListWidget";
 import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextInputWidget";
 import * as cache from "../cache";
-import { Template, getWithRedirectTo } from "../Template";
 import {getBannerOptions} from "../getBanners";
 import appConfig from "../config";
+import { filterAndMap } from "../util";
+import ParameterWidget from "./Components/ParameterWidget";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -197,19 +198,48 @@ MainWindow.prototype.getReadyProcess = function ( data ) {
 		.next( () => this.searchBox.focus() );
 };
 
+// Use the getActionProcess() method to do things when actions are clicked
+MainWindow.prototype.getActionProcess = function ( action ) {
+	// FIXME: Make these actually do the things.
+	if ( action === "help" ) {
+		console.log("[Rater] Help clicked!");
+	} else if ( action === "save" ) {
+		var bannersWikitext = filterAndMap(
+			this.bannerList.items,
+			banner => !banner.isShellTemplate,
+			banner => banner.makeWikitext()
+		).join("\n");
+		console.log("Banners", bannersWikitext);
+		var shellTemplate = this.bannerList.items.find(banner => banner.isShellTemplate);
+		if (shellTemplate) {
+			shellTemplate.parameterList.addItems([ new ParameterWidget({name:"1", value:"\n"+bannersWikitext+"\n"}) ]);
+			console.log("Shell+Banners", shellTemplate.makeWikitext());
+		}
+		var dialog = this;   
+		return new OO.ui.Process( function () {
+			// Do something about the edit.
+			dialog.close();
+		} );
+	} else if ( action === "preview" ) {
+		console.log("[Rater] Preview clicked!");
+	} else if ( action === "changes" ) {
+		console.log("[Rater] Changes clicked!");
+	}
+	return MainWindow.super.prototype.getActionProcess.call( this, action );
+};
+
+
 MainWindow.prototype.onSearchSelect = function() {
 	var name = this.searchBox.getValue().trim();
 	if (!name) {
 		return;
 	}
 	var existingBanner = this.bannerList.items.find(banner => {
-		return (
-			banner.template.getTitle().getMainText() === name ||
-			banner.template.redirectTarget && banner.template.redirectTarget.getMainText() === name
-		);
+		return banner.mainText === name ||	banner.redirectTargetMainText === name;
 	});
 	if (existingBanner) {
 		// TODO: show error message
+		console.log("There is already a {{" + name + "}} banner");
 		return;
 	}
 	if (!/^[Ww](?:P|iki[Pp]roject)/.test(name)) {
@@ -220,25 +250,15 @@ MainWindow.prototype.onSearchSelect = function() {
 		console.log(message);
 	}
 	if (name === "WikiProject Disambiguation" && $("#ca-talk.new").length !== 0 && this.bannerList.items.length === 0) {
-		var noNewDabMessage = "New talk pages shouldn't be created if they will only contain the {{WikiProject Disambiguation}} banner. Continue?";
+		// eslint-disable-next-line no-useless-escape
+		var noNewDabMessage = "New talk pages shouldn't be created if they will only contain the \{\{WikiProject Disambiguation\}\} banner. Continue?";
 		// TODO: ask for confirmation
 		console.log(noNewDabMessage);
 	}
 	// Create Template object
-	var template = new Template();
-	template.name = name;
-	getWithRedirectTo(template)
-		.then(function(template) {
-			return $.when(
-				template.setClassesAndImportances(),
-				template.setParamDataAndSuggestions()
-			).then(() => {
-				// Return the now-modified templates
-				return template;
-			});
-		})
-		.then(template => {
-			this.bannerList.addItems( [new BannerWidget(template)] );
+	BannerWidget.newFromTemplateName(name)
+		.then(banner => {
+			this.bannerList.addItems( [banner] );
 			this.updateSize();
 		});
 };

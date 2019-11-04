@@ -1,4 +1,4 @@
-import {API, isAfterDate} from "./util";
+import {API, isAfterDate, mostFrequent} from "./util";
 import config from "./config";
 import * as cache from "./cache";
 
@@ -20,6 +20,10 @@ import * as cache from "./cache";
 var Template = function(wikitext) {
 	this.wikitext = wikitext;
 	this.parameters = [];
+	// Spacing around pipes, equals signs, end braces (defaults)
+	this.pipeStyle = " |";
+	this.equalsStyle = "=";
+	this.endBracesStyle = "}}";
 };
 Template.prototype.addParam = function(name, val, wikitext) {
 	this.parameters.push({
@@ -105,6 +109,13 @@ var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-contro
 		while ( /(\[\[[^\]]*?)\|(.*?\]\])/g.test(text) ) {
 			text = text.replace(/(\[\[[^\]]*?)\|(.*?\]\])/g, "$1\x01$2");
 		}
+
+		// Figure out most-used spacing styles for pipes/equals
+		template.pipeStyle = mostFrequent( text.match(/[\s\n]*\|[\s\n]*/g) ) || " |";
+		template.equalsStyle = mostFrequent( text.replace(/(=[^|]*)=+/g, "$1").match(/[\s\n]*=[\s\n]*/g) ) || "=";
+		// Figure out end-braces style
+		var endSpacing = text.match(/[\s\n]*$/);
+		template.endBracesStyle = (endSpacing ? endSpacing[0] : "") + "}}";
 
 		var chunks = text.split("|").map(function(chunk) {
 			// change '\x01' control characters back to pipes
@@ -352,28 +363,6 @@ Template.prototype.setParamDataAndSuggestions = function() {
 					"= in " + self.getTitle().getPrefixedText());
 					}
 				}
-				// Make sure required/suggested parameters are present
-				if ( (paraData.required || paraData.suggested) && !self.getParam(paraName) ) {
-				// Check if already present in an alias, if any
-					if ( paraData.aliases.length ) {
-						var aliases = self.parameters.filter(p => {
-							var isAlias = paraData.aliases.includes(p.name);
-							var isEmpty = !p.val;
-							return isAlias && !isEmpty;
-						});
-						if ( aliases.length ) {
-						// At least one non-empty alias, so do nothing
-							return;
-						}
-					}
-					// No non-empty aliases, so set parameter to either the autovaule, or
-					// an empty string (without touching, unless it is a required parameter)
-					self.parameters.push({
-						name:paraName,
-						value: paraData.autovalue || "",
-						autofilled: true
-					});
-				}
 			});
 		
 			// Make suggestions for combobox
@@ -415,10 +404,40 @@ Template.prototype.setParamDataAndSuggestions = function() {
 	return paramDataSet;	
 };
 
+Template.prototype.addMissingParams = function() {
+	var thisTemplate = this;
+	$.each(thisTemplate.paramData, function(paraName, paraData) {
+		// Make sure required/suggested parameters are present
+		if ( (paraData.required || paraData.suggested) && !thisTemplate.getParam(paraName) ) {
+			// Check if already present in an alias, if any
+			if ( paraData.aliases.length ) {
+				var aliases = thisTemplate.parameters.filter(p => {
+					var isAlias = paraData.aliases.includes(p.name);
+					var isEmpty = !p.val;
+					return isAlias && !isEmpty;
+				});
+				if ( aliases.length ) {
+				// At least one non-empty alias, so do nothing
+					return;
+				}
+			}
+			// No non-empty aliases, so add this to the parameters list (with
+			// value set parameter to either the autovaule, or an empty string).
+			// Also set that it was autofilled.
+			thisTemplate.parameters.push({
+				name:paraName,
+				value: paraData.autovalue || "",
+				autofilled: true,
+			});
+		}
+	});
+	return thisTemplate;
+};
+
 Template.prototype.setClassesAndImportances = function() {
 	var parsed = $.Deferred();
 	
-	if ( this.classes && this.importances ) {
+	if ( (this.classes && this.importances) || this.isShellTemplate() ) {
 		return parsed.resolve();
 	}
 

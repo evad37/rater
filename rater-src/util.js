@@ -74,4 +74,87 @@ var makeErrorMsg = function(first, second) {
 	}
 };
 
-export {isAfterDate, API, makeErrorMsg};
+var yesWords = [
+	"add",
+	"added",
+	"affirm",
+	"affirmed",
+	"include",
+	"included",
+	"on",
+	"true",
+	"yes",
+	"y",
+	"1"
+];
+var noWords = [
+	"decline",
+	"declined",
+	"exclude",
+	"excluded",
+	"false",
+	"none",
+	"not",
+	"no",
+	"n",
+	"off",
+	"omit",
+	"omitted",
+	"remove",
+	"removed",
+	"0"
+];
+var normaliseYesNo = function(val) {
+	if (val == null) {
+		return val;
+	}
+	var trimmedLcVal = val.trim().toLowerCase();
+	if (yesWords.includes(trimmedLcVal)) {
+		return "yes";
+	} else if (noWords.includes(trimmedLcVal)) {
+		return "no";
+	} else {
+		return trimmedLcVal;
+	}
+};
+
+/**
+ * 
+ * @param {Array} array 
+ * @param {Function} filterPredicate (currentVal, currentIndex, array) => {boolean}
+ * @param {Function} mapTransform (currentVal, currentIndex, array) => {any}
+ * @returns {Array}
+ */
+var filterAndMap = function(array, filterPredicate, mapTransform) {
+	return array.reduce(
+		(accumulated, currentVal, currentIndex) => {
+			if (filterPredicate(currentVal, currentIndex, array)) {
+				return [...accumulated, mapTransform(currentVal, currentIndex, array)];
+			}
+			return accumulated;
+		},
+		[]
+	);
+};
+
+/**
+ * 
+ * @param {string[]|number[]} array 
+ * @returns {string} item with the highest frequency
+ * e.g. `mostFrequent(["apple", "apple", "orange"])` returns `"apple"`
+ */
+function mostFrequent(array) {
+	if (!array || !Array.isArray(array) || array.length === 0)
+		return null;
+	var map = {};
+	var mostFreq = null;
+	array.forEach((item) => {
+		map[item] = (map[item] || 0) + 1;
+		if (mostFreq === null || map[item] > map[mostFreq]) {
+			mostFreq = item;
+		}
+	});
+	return mostFreq;
+}
+
+export {isAfterDate, API, makeErrorMsg, filterAndMap, normaliseYesNo, mostFrequent};

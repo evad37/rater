@@ -66,6 +66,8 @@ var setupRater = function(clickEvent) {
 			...templates.map(template => template.isShellTemplate() ? null : template.setClassesAndImportances()),
 			...templates.map(template => template.setParamDataAndSuggestions())
 		]).then(() => {
+			// Add missing required/suggested values
+			templates.forEach(template => template.addMissingParams());
 			// Return the now-modified templates
 			return templates;
 		});

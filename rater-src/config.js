@@ -6,9 +6,18 @@ config.script = {
 	advert:  " ([[User:Evad37/rater.js|Rater]])",
 	version: "2.0.0"
 };
-// Preferences: globals vars added to users' common.js, or set to defaults if undefined
-config.prefs = {
-	watchlist: window.rater_watchlist || "preferences"
+// Default preferences, if user subpage raterPrefs.json does not exist
+config.defaultPrefs = {
+	"autostart": false,
+	"autostartRedirects": false,
+	"autostartNamespaces": [0],
+	"minForShell": 3,
+	"bypassRedirects": true,
+	"autofillClassFromOthers": true,
+	"autofillClassFromOres": true,
+	"autofillImportance": true,
+	"collapseParamsLowerLimit": 6,
+	"watchlist": "preferences"
 };
 // MediaWiki configuration values
 config.mw = mw.config.get( [
@@ -24,15 +33,6 @@ config.mw = mw.config.get( [
 	"wgCategories",
 	"wgIsMainPage"
 ] );
-
-config.regex = { /* eslint-disable no-useless-escape */
-	// Pattern to find templates, which may contain other templates
-	template:		/\{\{\s*([^#\{\s].+?)\s*(\|(?:.|\n)*?(?:(?:\{\{(?:.|\n)*?(?:(?:\{\{(?:.|\n)*?\}\})(?:.|\n)*?)*?\}\})(?:.|\n)*?)*|)\}\}\n?/g,
-	// Pattern to find `|param=value` or `|value`, where `value` can only contain a pipe
-	// if within square brackets (i.e. wikilinks) or braces (i.e. templates)
-	templateParams:	/\|(?!(?:[^{]+}|[^\[]+]))(?:.|\s)*?(?=(?:\||$)(?!(?:[^{]+}|[^\[]+])))/g
-}; /* eslint-enable no-useless-escape */
-config.deferred = {};
 config.bannerDefaults = {
 	classes: [
 		"FA",

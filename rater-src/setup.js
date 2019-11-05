@@ -4,6 +4,7 @@ import { parseTemplates, getWithRedirectTo } from "./Template";
 import {getBannerNames} from "./getBanners";
 import * as cache from "./cache";
 import windowManager from "./windowManager";
+import { getPrefs } from "./prefs";
 
 var setupRater = function(clickEvent) {
 	if ( clickEvent ) {
@@ -16,6 +17,9 @@ var setupRater = function(clickEvent) {
 	var talkPage = currentPage && currentPage.getTalkPage();
 	var subjectPage = currentPage && currentPage.getSubjectPage();
  
+	// Get preferences (task 0)
+	var prefsPromise = getPrefs();
+
 	// Get lists of all banners (task 1)
 	var bannersPromise = getBannerNames();
 
@@ -148,18 +152,20 @@ var setupRater = function(clickEvent) {
 
 
 	$.when(
+		prefsPromise,
 		loadTalkPromise,
 		templateDetailsPromise,
 		redirectCheckPromise,
 		shouldGetOres && oresPromise
 	).then(
 		// All succeded
-		function(talkWikitext, banners, redirectTarget, oresPredicition ) {
+		function(preferences, talkWikitext, banners, redirectTarget, oresPredicition ) {
 			var result = {
 				success: true,
 				talkpage: talkPage,
 				talkWikitext: talkWikitext,
-				banners: banners
+				banners: banners,
+				preferences: preferences
 			};
 			if (redirectTarget) {
 				result.redirectTarget = redirectTarget;

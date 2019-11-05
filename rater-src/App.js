@@ -33,7 +33,10 @@ import windowManager from "./windowManager";
 		"Rate quality and importance",
 		"5"
 	);
-	$("#ca-rater").click(() => setupRater().then(showMainWindow, showSetupError) );
+	$("#ca-rater").click(event => {
+		event.preventDefault();
+		setupRater().then(showMainWindow, showSetupError);
+	});
 
 	// Invocation by auto-start (do not show message on error)
 	autoStart().then(showMainWindow);

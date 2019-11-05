@@ -35,6 +35,10 @@ LoadDialog.prototype.initialize = function () {
 	} );
 	this.setuptasks = [
 		new OO.ui.LabelWidget( {
+			label: "Loading your Rater preferences...",
+			$element: $("<p style=\"display:block\">")
+		}),
+		new OO.ui.LabelWidget( {
 			label: "Loading list of project banners...",
 			$element: $("<p style=\"display:block\">")
 		}),
@@ -141,7 +145,7 @@ LoadDialog.prototype.getSetupProcess = function ( data ) {
 	return LoadDialog.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
 			var showOresTask = !!data.ores;
-			this.setuptasks[5].toggle(showOresTask);
+			this.setuptasks[6].toggle(showOresTask);
 			var taskPromises = data.ores ? data.promises : data.promises.slice(0, -1);
 			data.isOpened.then(() => this.addTaskPromiseHandlers(taskPromises));
 		}, this );

@@ -3,7 +3,8 @@
  > Helps assess WikiProject banners.
 
  This script is a loader that will load the actual script from User:Evad37/rater/sandbox/app.js 
- once Resource loader modules are loaded and the page DOM is ready
+ once Resource loader modules are loaded and the page DOM is ready.
+ Source code is available at https://github.com/evad37/rater
 
  THIS IS A PRE-APLHA SANDBOX VERSION, NOT INTENDED TO BE FULLY (OR AT ALL) FUNCTIONAL
 ***************************************************************************************************/
@@ -15,6 +16,7 @@ $.when(
 		"oojs-ui-core", "oojs-ui-widgets", "oojs-ui-windows",
 		"oojs-ui.styles.icons-content", "oojs-ui.styles.icons-interactions",
 		"oojs-ui.styles.icons-moderation", "oojs-ui.styles.icons-editing-core",
+		"mediawiki.widgets", "mediawiki.widgets.NamespacesMultiselectWidget",
 	]),
 	// Page ready
 	$.ready

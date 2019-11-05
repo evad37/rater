@@ -6,6 +6,7 @@ import {getBannerOptions} from "../getBanners";
 import appConfig from "../config";
 import { filterAndMap } from "../util";
 import ParameterWidget from "./Components/ParameterWidget";
+import PrefsFormWidget from "./Components/PrefsFormWidget";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -182,14 +183,7 @@ MainWindow.prototype.initialize = function () {
 
 	// Preferences, filled in with current prefs upon loading.
 	// TODO: Make this into a component, add fields and inputs
-	this.prefsForm = new OO.ui.FieldsetLayout( {
-		label: "Preferences"
-	} );
-	this.prefsForm.addItems([
-		new OO.ui.FieldLayout(
-			new OO.ui.TextInputWidget( {placeholder: "A text input field" } ),
-			{ label: "Field One" } )
-	]);
+	this.prefsForm = new PrefsFormWidget();
 	this.prefsLayout = new OO.ui.PanelLayout( {
 		padded: true,
 		expanded: false,
@@ -247,6 +241,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 		.next( () => {
 			this.actions.setMode("edit");
 			this.preferences = data.preferences;
+			this.prefsForm.setPrefValues(data.preferences);
 			// Set up window based on data
 			this.bannerList.addItems(
 				data.banners.map(bannerTemplate => new BannerWidget(bannerTemplate))
@@ -323,21 +318,21 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 </tr>
 <tr>
 <td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[Category:FK LAFC Lučenec players]]</a></div></td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[:Category:FK LAFC Lučenec players]]</a></div></td>
 <td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[Category:FK LAFC Lučenec players]]</a></div></td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[:Category:FK LAFC Lučenec players]]</a></div></td>
 </tr>
 <tr>
 <td class="diff-marker">−</td>
-<td class="diff-deletedline"><div>[[Category:<del class="diffchange diffchange-inline">FK</del> <del class="diffchange diffchange-inline">Železiarne</del> Podbrezová managers]]</div></td>
+<td class="diff-deletedline"><div>[[:Category:<del class="diffchange diffchange-inline">FK</del> <del class="diffchange diffchange-inline">Železiarne</del> Podbrezová managers]]</div></td>
 <td class="diff-marker">+</td>
-<td class="diff-addedline"><div>[[Category:<ins class="diffchange diffchange-inline">ŽP</ins> <ins class="diffchange diffchange-inline">Šport</ins> Podbrezová managers]]</div></td>
+<td class="diff-addedline"><div>[[:Category:<ins class="diffchange diffchange-inline">ŽP</ins> <ins class="diffchange diffchange-inline">Šport</ins> Podbrezová managers]]</div></td>
 </tr>
 <tr>
 <td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[Category:FC Nitra managers]]</a></div></td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[:Category:FC Nitra managers]]</a></div></td>
 <td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[Category:FC Nitra managers]]</a></div></td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[:Category:FC Nitra managers]]</a></div></td>
 </tr>
 </tbody></table>`;
 

@@ -21,30 +21,51 @@ MainWindow.static.actions = [
 		label: "X", // not using an icon since color becomes inverted, i.e. white on light-grey
 		title: "Close (and discard any changes)",
 		flags: "primary",
+		modes: ["edit", "diff", "preview"] // available when current mode isn't "prefs"
 	},
 	// Safe (top left)
 	{
-		action: "help",
+		action: "showPrefs",
 		flags: "safe",
-		label: "?", // not using icon, to mirror Close action
-		title: "help"
+		icon: "settings",
+		title: "help",
+		modes: ["edit", "diff", "preview"] // available when current mode isn't "prefs"
 	},
 	// Others (bottom)
 	{
 		action: "save",
 		label: new OO.ui.HtmlSnippet("<span style='padding:0 1em;'>Save</span>"),
-		flags: ["primary", "progressive"]
+		flags: ["primary", "progressive"],
+		modes: ["edit", "diff", "preview"] // available when current mode isn't "prefs"
 	},
 	{
 		action: "preview",
-		label: "Show preview"
+		label: "Show preview",
+		modes: ["edit", "diff"] // available when current mode isn't "preview" or "prefs"
 	},
 	{
 		action: "changes",
-		label: "Show changes"
+		label: "Show changes",
+		modes: ["edit", "preview"] // available when current mode isn't "diff" or "prefs"
 	},
 	{
-		label: "Cancel"
+		action: "back",
+		label: "Back",
+		modes: ["diff", "preview"] // available when current mode is "diff" or "prefs"
+	},
+	
+	// "prefs" mode only
+	{
+		action: "savePrefs",
+		label: "Update",
+		flags: ["primary", "progressive"],
+		modes: "prefs" 
+	},
+	{
+		action: "closePrefs",
+		label: "Cancel",
+		flags: "safe",
+		modes: "prefs"
 	}
 ];
 
@@ -52,14 +73,6 @@ MainWindow.static.actions = [
 MainWindow.prototype.initialize = function () {
 	// Call the parent method.
 	MainWindow.super.prototype.initialize.call( this );
-	// this.outerLayout = new OO.ui.StackLayout( {
-	// 	items: [
-	// 		this.topBar,
-	// 		this.contentLayout
-	// 	],
-	// 	continuous: true,
-	// 	expanded: true
-	// } );
 	
 	/* --- TOP BAR --- */
 	
@@ -161,8 +174,56 @@ MainWindow.prototype.initialize = function () {
 
 	// Banners added dynamically upon opening, so just need a layout with an empty list
 	this.bannerList = new BannerListWidget();
+	this.editLayout = new OO.ui.PanelLayout( {
+		padded: false,
+		expanded: false,
+		$content: this.bannerList.$element
+	} );
 
-	this.$body.css({"top":"73px"}).append(this.bannerList.$element);
+	// Preferences, filled in with current prefs upon loading.
+	// TODO: Make this into a component, add fields and inputs
+	this.prefsForm = new OO.ui.FieldsetLayout( {
+		label: "Preferences"
+	} );
+	this.prefsForm.addItems([
+		new OO.ui.FieldLayout(
+			new OO.ui.TextInputWidget( {placeholder: "A text input field" } ),
+			{ label: "Field One" } )
+	]);
+	this.prefsLayout = new OO.ui.PanelLayout( {
+		padded: true,
+		expanded: false,
+		$content: this.prefsForm.$element
+	} );
+
+	// Preview, Show changes
+	this.parsedContentContainer = new OO.ui.FieldsetLayout( {
+		label: "Preview"
+	} );
+	this.parsedContentWidget = new OO.ui.LabelWidget( {label: "",	$element:$("<div>")	});
+	this.parsedContentContainer.addItems([
+		new OO.ui.FieldLayout(
+			this.parsedContentWidget,			
+			{ align: "top" }
+		)
+	]);
+	this.parsedContentLayout = new OO.ui.PanelLayout( {
+		padded: true,
+		expanded: false,
+		$content: this.parsedContentContainer.$element
+	} );
+
+	this.contentArea = new OO.ui.StackLayout( {
+		items: [
+			this.editLayout,
+			this.prefsLayout,
+			this.parsedContentLayout
+		],
+		padded: false,
+		expanded: false
+	} );
+
+	this.$body.css({"top":"73px"}).append(this.contentArea.$element);
 
 	/* --- EVENT HANDLING --- */
 
@@ -172,7 +233,10 @@ MainWindow.prototype.initialize = function () {
 
 // Override the getBodyHeight() method to specify a custom height
 MainWindow.prototype.getBodyHeight = function () {
-	return Math.max(200, this.bannerList.$element.outerHeight( true ));
+	var currentlayout = this.contentArea.getCurrentItem();
+	var layoutHeight = currentlayout && currentlayout.$element.outerHeight(true);
+	var contentHeight = currentlayout && currentlayout.$element.children(":first-child").outerHeight(true);
+	return Math.max(200, layoutHeight, contentHeight);
 };
 
 // Use getSetupProcess() to set up the window with data passed to it at the time 
@@ -181,7 +245,9 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 	data = data || {};
 	return MainWindow.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
-			// TODO: Set up window based on data
+			this.actions.setMode("edit");
+			this.preferences = data.preferences;
+			// Set up window based on data
 			this.bannerList.addItems(
 				data.banners.map(bannerTemplate => new BannerWidget(bannerTemplate))
 			);
@@ -201,8 +267,23 @@ MainWindow.prototype.getReadyProcess = function ( data ) {
 // Use the getActionProcess() method to do things when actions are clicked
 MainWindow.prototype.getActionProcess = function ( action ) {
 	// FIXME: Make these actually do the things.
-	if ( action === "help" ) {
-		console.log("[Rater] Help clicked!");
+	if ( action === "showPrefs" ) {
+		//console.log("[Rater] Prefs clicked!");
+		this.actions.setMode("prefs");
+		this.contentArea.setItem( this.prefsLayout );
+		this.updateSize();
+	} else if ( action === "savePrefs" ) {
+		console.log("[Rater] Save prefs clicked!");
+		// TODO: Actually save the prefs. Would be nice to actually also apply them,
+		// but could probably get away with telling users to restart rater.
+		this.actions.setMode("edit");
+		this.contentArea.setItem( this.editLayout );
+		this.updateSize();
+	} else if ( action === "closePrefs" ) {
+		console.log("[Rater] Close prefs clicked!");
+		this.actions.setMode("edit");
+		this.contentArea.setItem( this.editLayout );
+		this.updateSize();
 	} else if ( action === "save" ) {
 		var bannersWikitext = filterAndMap(
 			this.bannerList.items,
@@ -222,8 +303,53 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 		} );
 	} else if ( action === "preview" ) {
 		console.log("[Rater] Preview clicked!");
+		let placeholderHtml = "<div class=\"mw-parser-output\"><table class=\"plainlinks tmbox tmbox-notice\" role=\"presentation\" style=\"background:#FFF;\"><tbody><tr><td class=\"mbox-image\"><a href=\"/wiki/Wikipedia:WikiProject_X\" title=\"Wikipedia:WikiProject X\"><img alt=\"WikiProject X icon.svg\" src=\"//upload.wikimedia.org/wikipedia/commons/thumb/c/c1/WikiProject_X_icon.svg/20px-WikiProject_X_icon.svg.png\" decoding=\"async\" width=\"20\" height=\"20\" srcset=\"//upload.wikimedia.org/wikipedia/commons/thumb/c/c1/WikiProject_X_icon.svg/30px-WikiProject_X_icon.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/c/c1/WikiProject_X_icon.svg/40px-WikiProject_X_icon.svg.png 2x\" data-file-width=\"224\" data-file-height=\"224\" /></a></td><td class=\"mbox-text\">This page is a component of <a href=\"/wiki/Wikipedia:WikiProject_X\" title=\"Wikipedia:WikiProject X\">WikiProject X</a>, a project to enhance the WikiProject experience.</td></tr></tbody></table></div>";
+
+		this.parsedContentWidget.setLabel(new OO.ui.HtmlSnippet(placeholderHtml));
+		this.parsedContentContainer.setLabel("Preview:");
+		this.actions.setMode("preview");
+		this.contentArea.setItem( this.parsedContentLayout );
+		this.updateSize();		
 	} else if ( action === "changes" ) {
 		console.log("[Rater] Changes clicked!");
+		let placeholderHtml = `<table class="diff diff-contentalign-left" data-mw="interface">
+<colgroup><col class="diff-marker">
+<col class="diff-content">
+<col class="diff-marker">
+<col class="diff-content">
+</colgroup><tbody><tr>
+<td colspan="2" class="diff-lineno">Line 59:</td>
+<td colspan="2" class="diff-lineno">Line 59:</td>
+</tr>
+<tr>
+<td class="diff-marker">&nbsp;</td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[Category:FK LAFC Lučenec players]]</a></div></td>
+<td class="diff-marker">&nbsp;</td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[Category:FK LAFC Lučenec players]]</a></div></td>
+</tr>
+<tr>
+<td class="diff-marker">−</td>
+<td class="diff-deletedline"><div>[[Category:<del class="diffchange diffchange-inline">FK</del> <del class="diffchange diffchange-inline">Železiarne</del> Podbrezová managers]]</div></td>
+<td class="diff-marker">+</td>
+<td class="diff-addedline"><div>[[Category:<ins class="diffchange diffchange-inline">ŽP</ins> <ins class="diffchange diffchange-inline">Šport</ins> Podbrezová managers]]</div></td>
+</tr>
+<tr>
+<td class="diff-marker">&nbsp;</td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[Category:FC Nitra managers]]</a></div></td>
+<td class="diff-marker">&nbsp;</td>
+<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[Category:FC Nitra managers]]</a></div></td>
+</tr>
+</tbody></table>`;
+
+		this.parsedContentWidget.setLabel(new OO.ui.HtmlSnippet(placeholderHtml));
+		this.parsedContentContainer.setLabel("Changes:");
+		this.actions.setMode("diff");
+		this.contentArea.setItem( this.parsedContentLayout );
+		this.updateSize();	
+	} else if ( action === "back" ) {
+		this.actions.setMode("edit");
+		this.contentArea.setItem( this.editLayout );
+		this.updateSize();
 	}
 	return MainWindow.super.prototype.getActionProcess.call( this, action );
 };

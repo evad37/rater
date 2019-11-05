@@ -1,6 +1,6 @@
 import setupRater from "./setup";
 import autoStart from "./autostart";
-import diffStyles from "./css.js";
+import { diffStyles } from "./css.js";
 import { makeErrorMsg } from "./util";
 import windowManager from "./windowManager";
 

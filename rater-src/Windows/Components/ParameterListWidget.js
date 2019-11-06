@@ -12,10 +12,15 @@ var ParameterListWidget = function ParameterListWidget( config ) {
 		$group: this.$element
 	} );
 	this.addItems( config.items );
+    
+	this.preferences = config.preferences;
    
-	// Hide some parameters (initially), if more than set display limit
-	if (config.displayLimit && this.items.length > config.displayLimit ) {
-		var hideFromNumber = config.displayLimit - 1; // One-indexed
+	// Hide some parameters (initially), if more than set display limit -- which is the 
+	// one more than collapseParamsLowerLimit, to prevent only one param being hidden
+	// (mostly: may occasionally occur if params were auto-filled).
+	let displayLimit = this.preferences.collapseParamsLowerLimit + 1;
+	if (displayLimit && this.items.length > displayLimit ) {
+		var hideFromNumber = displayLimit - 1; // One-indexed
 		var hideFromIndex = hideFromNumber - 1; // Zero-indexed
 		var hiddenCount = 0;
 		for (let i = hideFromIndex; i < this.items.length; i++) {
@@ -97,6 +102,39 @@ ParameterListWidget.prototype.makeWikitext = function(pipeStyle, equalsStyle) {
 	return this.getParameterItems()
 		.map(parameter => parameter.makeWikitext(pipeStyle, equalsStyle))
 		.join("");
+};
+
+ParameterListWidget.prototype.setPreferences = function(prefs) {
+	this.preferences = prefs;
+	var params = this.getParameterItems();
+	// Unhide some parameters of the collapseParamsLowerLimit has increased.
+	// (Not hiding any if it decreased, since it's a *lower* limit of what needs to be shown.)
+	if ( params.length <= this.preferences.collapseParamsLowerLimit ) {
+		return;
+	}
+	var hiddenParams = params.filter(param => !param.isVisible());
+	var visibleParamsCount = params.length - hiddenParams.length;
+	if (
+		hiddenParams === 0 ||
+        visibleParamsCount >= this.preferences.collapseParamsLowerLimit
+	) {
+		return;
+	}
+	var numToUnhide = Math.min(
+		this.preferences.collapseParamsLowerLimit - visibleParamsCount,
+		hiddenParams.length
+	);
+	for (let i = 0; i < numToUnhide; i++) {
+		hiddenParams[i].toggle(true);
+	}
+	var stillHiddenCount = hiddenParams.length - numToUnhide;
+	if (stillHiddenCount === 0) {
+		this.removeItems([this.showMoreParametersButton]);
+	} else {
+		this.showMoreParametersButton.setLabel(
+			"Show " + stillHiddenCount + " more " + (stillHiddenCount===1 ? "paramter" : "paramters")
+		);
+	}
 };
 
 export default ParameterListWidget;

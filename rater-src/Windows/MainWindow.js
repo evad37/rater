@@ -75,6 +75,9 @@ MainWindow.static.actions = [
 MainWindow.prototype.initialize = function () {
 	// Call the parent method.
 	MainWindow.super.prototype.initialize.call( this );
+
+	/* --- PREFS --- */
+	this.preferences = appConfig.defaultPrefs;
 	
 	/* --- TOP BAR --- */
 	
@@ -175,7 +178,9 @@ MainWindow.prototype.initialize = function () {
 	/* --- CONTENT AREA --- */
 
 	// Banners added dynamically upon opening, so just need a layout with an empty list
-	this.bannerList = new BannerListWidget();
+	this.bannerList = new BannerListWidget({
+		preferences: this.preferences
+	});
 	this.editLayout = new OO.ui.PanelLayout( {
 		padded: false,
 		expanded: false,
@@ -241,11 +246,14 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 	return MainWindow.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
 			this.actions.setMode("edit");
-			this.preferences = data.preferences;
+			this.setPreferences(data.preferences);
 			this.prefsForm.setPrefValues(data.preferences);
 			// Set up window based on data
 			this.bannerList.addItems(
-				data.banners.map(bannerTemplate => new BannerWidget(bannerTemplate))
+				data.banners.map( bannerTemplate => new BannerWidget(
+					bannerTemplate,
+					{ preferences: this.preferences }
+				) )
 			);
 			this.talkWikitext = data.talkWikitext;
 			this.talkpage = data.talkpage;
@@ -275,8 +283,7 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 			ApiSetPrefs(updatedPrefs).then(
 				// Success
 				() => {
-					this.preferenecs = updatedPrefs;
-					// TODO: Actually apply the updated preferences
+					this.setPreferences(updatedPrefs);
 					this.actions.setMode("edit");
 					this.contentArea.setItem( this.editLayout );
 					this.topBar.setDisabled(false);
@@ -373,6 +380,11 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 	return MainWindow.super.prototype.getActionProcess.call( this, action );
 };
 
+MainWindow.prototype.setPreferences = function(prefs) {
+	this.preferences = $.extend({}, appConfig.defaultPrefs, prefs);
+	// Applies preferences to existing items in the window:
+	this.bannerList.setPreferences(this.preferences);
+};
 
 MainWindow.prototype.onSearchSelect = function() {
 	var name = this.searchBox.getValue().trim();
@@ -401,7 +413,7 @@ MainWindow.prototype.onSearchSelect = function() {
 		console.log(noNewDabMessage);
 	}
 	// Create Template object
-	BannerWidget.newFromTemplateName(name)
+	BannerWidget.newFromTemplateName(name, {preferences: this.preferences})
 		.then(banner => {
 			this.bannerList.addItems( [banner] );
 			this.updateSize();

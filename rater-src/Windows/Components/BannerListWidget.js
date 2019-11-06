@@ -11,9 +11,12 @@ var BannerListWidget = function BannerListWidget( config ) {
 	OO.ui.mixin.GroupElement.call( this, {
 		$group: this.$element
 	} );
-
 	this.$element.css({"padding":"20px 10px 16px 10px"});
 
+	// Prefs
+	this.preferences = config.preferences;
+
+	// Events
 	this.aggregate( {"remove": "bannerRemove"} );
 	this.connect( this, {"bannerRemove": "onBannerRemove"} );
 
@@ -83,8 +86,11 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 	OO.ui.mixin.GroupElement.prototype.addItems.call( this, items, index );
 
 	// Add a bannershell template, but only if more than two banners and there isn't already one 
-	if (this.items.length > 2 && !this.items.some(banner => banner.isShellTemplate)) {
-		BannerWidget.newFromTemplateName(config.shellTemplates[0])
+	if (
+		this.items.length >= this.preferences.minForShell &&
+		!this.items.some(banner => banner.isShellTemplate)
+	) {
+		BannerWidget.newFromTemplateName(config.shellTemplates[0], {preferences: this.preferences})
 			.then(shellBannerWidget => {
 				OO.ui.mixin.GroupElement.prototype.addItems.call( this, [shellBannerWidget], 0 );
 				var biographyBanner =  this.items.find(
@@ -96,6 +102,11 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 			});
 	}
 	return this;
+};
+
+BannerListWidget.prototype.setPreferences = function(prefs) {
+	this.preferences = prefs;
+	this.items.forEach(banner => banner.setPreferences(prefs));
 };
 
 export default BannerListWidget;

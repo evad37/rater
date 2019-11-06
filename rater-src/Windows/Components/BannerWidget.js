@@ -10,6 +10,9 @@ function BannerWidget( template, config ) {
 	// Call parent constructor
 	BannerWidget.super.call( this, config );
 
+	/* --- PREFS --- */
+	this.preferences = config.preferences;
+	
 	/* --- PROPS --- */
 	this.paramData = template.paramData;
 	this.paramAliases = template.paramAliases || {};
@@ -136,7 +139,7 @@ function BannerWidget( template, config ) {
 
 	this.parameterList = new ParameterListWidget( {
 		items: parameterWidgets,
-		displayLimit: 6
+		preferences: this.preferences
 	} );
 
 	/* --- ADD PARAMETER SECTION --- */
@@ -223,6 +226,12 @@ function BannerWidget( template, config ) {
 	this.addParameterValueInput.connect(this, { "change": "onAddParameterValueChange"});
 	this.removeButton.connect(this, {"click": "onRemoveButtonClick"}, );
 	this.clearButton.connect( this, {"click": "onClearButtonClick"} );
+
+	/* --- APPLY PREF -- */
+	if (this.preferences.bypassRedirects) {
+		this.bypassRedirect();
+	}
+
 }
 OO.inheritClass( BannerWidget, OO.ui.Widget );
 
@@ -230,7 +239,7 @@ OO.inheritClass( BannerWidget, OO.ui.Widget );
  * @param {String} templateName
  * @returns {Promise<BannerWidget>}
  */
-BannerWidget.newFromTemplateName = function(templateName) {
+BannerWidget.newFromTemplateName = function(templateName, config) {
 	var template = new Template();
 	template.name = templateName;
 	return getWithRedirectTo(template)
@@ -245,7 +254,7 @@ BannerWidget.newFromTemplateName = function(templateName) {
 				return template;
 			});
 		})
-		.then(template => new BannerWidget(template));
+		.then(template => new BannerWidget(template, config));
 };
 
 BannerWidget.prototype.onParameterChange = function() {
@@ -337,6 +346,18 @@ BannerWidget.prototype.onClearButtonClick = function() {
 	}
 };
 
+BannerWidget.prototype.bypassRedirect = function() {
+	if (!this.redirectTargetMainText) {
+		return;
+	}
+	// Update title label
+	this.mainLabelPopupButton.setLabel("{{" + this.redirectTargetMainText + "}}");
+	// Update properties
+	this.name = this.redirectTargetMainText;
+	this.mainText = this.redirectTargetMainText;
+	this.redirectTargetMainText = null;
+	this.changed = true;
+};
 
 BannerWidget.prototype.makeWikitext = function() {
 	if (!this.changed && this.wikitext) {
@@ -357,6 +378,14 @@ BannerWidget.prototype.makeWikitext = function() {
 			.map(parameter => parameter.makeWikitext(pipe, equals))
 			.join("") +
 		this.endBracesStyle;
+};
+
+BannerWidget.prototype.setPreferences = function(prefs) {
+	this.preferences = prefs;
+	if (this.preferences.bypassRedirects) {
+		this.bypassRedirect();
+	}
+	this.parameterList.setPreferences(prefs);
 };
 
 export default BannerWidget;

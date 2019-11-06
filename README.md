@@ -33,12 +33,12 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
        - [x] autostart
        - [x] autostartRedirects
        - [x] autostartNamespaces
-       - [ ] minForShell
-       - [ ] bypassRedirects
+       - [x] minForShell
+       - [x] bypassRedirects
        - [ ] autofillClassFromOthers
        - [ ] autofillClassFromOres
        - [ ] autofillImportance
-       - [ ] collapseParamsLowerLimit
+       - [x] collapseParamsLowerLimit
        - [ ] watchlist
     - [x] **MUST** Have action to display preferences, and allow changing them
     - [ ] **MUST** Check if $overlays have been specified for widgets with popups

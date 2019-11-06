@@ -88,7 +88,7 @@ PrefsFormWidget.prototype.setPrefValues = function(prefs) {
 		let value = prefs[prefName];
 		let input = this.preferences[prefName] && this.preferences[prefName].input;
 		switch (input && input.constructor.name) {
-		case "OoUiButtonOptionWidget":
+		case "OoUiButtonSelectWidget":
 			input.selectItemByData(value);
 			break;
 		case "OoUiNumberInputWidget":
@@ -99,7 +99,7 @@ PrefsFormWidget.prototype.setPrefValues = function(prefs) {
 			input.clearItems();
 			value.forEach(ns =>
 				input.addTag(
-					ns.toString(), // widget uses strings, not numbers!
+					ns.toString(),
 					ns === 0
 						? "(Main)"
 						: config.mw.wgFormattedNamespaces[ns]
@@ -116,12 +116,14 @@ PrefsFormWidget.prototype.getPrefs = function() {
 		let input = this.preferences[prefName].input;
 		let value;
 		switch (input.constructor.name) {
-		case "OoUiButtonOptionWidget":
+		case "OoUiButtonSelectWidget":
 			value = input.findSelectedItem().getData();
 			break;
-		case "OoUiNumberInputWidget":
 		case "OoUiToggleSwitchWidget":
 			value = input.getValue();
+			break;
+		case "OoUiNumberInputWidget":
+			value = Number(input.getValue()); // widget uses strings, not numbers!
 			break;
 		case "MwWidgetsNamespacesMultiselectWidget":
 			value = input.getValue().map(Number); // widget uses strings, not numbers!

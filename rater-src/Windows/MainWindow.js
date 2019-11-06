@@ -4,9 +4,10 @@ import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextIn
 import * as cache from "../cache";
 import {getBannerOptions} from "../getBanners";
 import appConfig from "../config";
-import { filterAndMap } from "../util";
+import { filterAndMap, makeErrorMsg } from "../util";
 import ParameterWidget from "./Components/ParameterWidget";
 import PrefsFormWidget from "./Components/PrefsFormWidget";
+import { setPrefs as ApiSetPrefs } from "../prefs";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -138,18 +139,11 @@ MainWindow.prototype.initialize = function () {
 		flags: "destructive"
 	} );
 
-	// Bypass all redirects button
-	this.bypassAllButton = new OO.ui.ButtonWidget( {
-		icon: "articleRedirect",
-		title: "Bypass all redirects"
-	} );
-
 	// Group the buttons together
 	this.menuButtons = new OO.ui.ButtonGroupWidget( {
 		items: [
 			this.removeAllButton,
-			this.clearAllButton,
-			this.bypassAllButton
+			this.clearAllButton
 		],
 		$element: $("<span style='float:left;'>"),
 	} );
@@ -166,6 +160,13 @@ MainWindow.prototype.initialize = function () {
 		$searchContainer,
 		//this.setAllDropDown.$element,
 		this.menuButtons.$element
+	);
+	this.topBar.setDisabled = (disable => [
+		this.searchBox,
+		this.addBannerButton,
+		this.setAllDropDown,
+		this.menuButtons
+	].forEach(widget => widget.setDisabled(disable))
 	);
 
 	// Append to the default dialog header
@@ -266,18 +267,38 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 		//console.log("[Rater] Prefs clicked!");
 		this.actions.setMode("prefs");
 		this.contentArea.setItem( this.prefsLayout );
+		this.topBar.setDisabled(true);
 		this.updateSize();
 	} else if ( action === "savePrefs" ) {
-		console.log("[Rater] Save prefs clicked!");
-		// TODO: Actually save the prefs. Would be nice to actually also apply them,
-		// but could probably get away with telling users to restart rater.
-		this.actions.setMode("edit");
-		this.contentArea.setItem( this.editLayout );
-		this.updateSize();
+		var updatedPrefs = this.prefsForm.getPrefs();
+		return new OO.ui.Process().next(
+			ApiSetPrefs(updatedPrefs).then(
+				// Success
+				() => {
+					this.preferenecs = updatedPrefs;
+					// TODO: Actually apply the updated preferences
+					this.actions.setMode("edit");
+					this.contentArea.setItem( this.editLayout );
+					this.topBar.setDisabled(false);
+					this.updateSize();
+				},
+				// Failure
+				(code, err) => $.Deferred().reject(
+					new OO.ui.Error(
+						$("<div>").append(
+							$("<strong style='display:block;'>").text("Could not save preferences."),
+							$("<span style='color:#777>").text( makeErrorMsg(code, err) )
+						)
+					)
+				)
+			)
+		);
 	} else if ( action === "closePrefs" ) {
 		console.log("[Rater] Close prefs clicked!");
 		this.actions.setMode("edit");
 		this.contentArea.setItem( this.editLayout );
+		this.topBar.setDisabled(false);
+		this.prefsForm.setPrefValues(this.preferences);
 		this.updateSize();
 	} else if ( action === "save" ) {
 		var bannersWikitext = filterAndMap(
@@ -304,6 +325,7 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 		this.parsedContentContainer.setLabel("Preview:");
 		this.actions.setMode("preview");
 		this.contentArea.setItem( this.parsedContentLayout );
+		this.topBar.setDisabled(true);
 		this.updateSize();		
 	} else if ( action === "changes" ) {
 		console.log("[Rater] Changes clicked!");
@@ -340,10 +362,12 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 		this.parsedContentContainer.setLabel("Changes:");
 		this.actions.setMode("diff");
 		this.contentArea.setItem( this.parsedContentLayout );
+		this.topBar.setDisabled(true);
 		this.updateSize();	
 	} else if ( action === "back" ) {
 		this.actions.setMode("edit");
 		this.contentArea.setItem( this.editLayout );
+		this.topBar.setDisabled(false);
 		this.updateSize();
 	}
 	return MainWindow.super.prototype.getActionProcess.call( this, action );

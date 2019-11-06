@@ -23,35 +23,35 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 
 ## TODO
  - [ ] Finish writing app (min viable product - same or better functionality than v1)
-    - Autofill listas parameters for biography banner
-    - Use labels from templatedata if available
-    - Access keys for save, show preview, show changes
-    - Visually parameters with null values are invalid and will not be included in saved wikitext. These are:
+    - [ ] **MUST** Autofill listas parameter for biography banner
+    - [ ] **MUST** have access keys for save, show preview, show changes
+    - [ ] **MUST** Visually indicate parameters with null values are invalid and will not be included in saved wikitext. These are:
        - Autofilled required/suggested parameters that don't have an autovalue, or
        - Parameters with a single allowed value that have been unchecked 
-    - Add modes/layouts for edit, prefs, diff, preview -- per second example of https://www.mediawiki.org/wiki/OOUI/Windows/Process_Dialogs#Action_sets 
-    - User prefrences, probably in a userspace json file, for things like:
-       - Minnimum number of banners before apply banner shell template (default: 3)
-          - (need to replace hard-coded value in BannerListWidget#addItems)
-       - Bypass redirects when adding/modifying banners (default: true)
-          - (need to code this feature)
-       - Autofill class from other banners, if they are all the same -- on articles only (default: true)
-          - (need to code this feature)
-       - Autofill class from ORES, if no other banners have a class (default: true)
-          - (need to code this feature)
-       - Autofill importance as low for new banners -- on articles only (default: true)
-          - (need to code this feature)
-       - Number of parameters to be present before hiding some
-          - (need to replace hard-coded value in ParameterListWidget)
-       - Watchlisting editied pages (default: "preferences", other options: "nochange", "watch")
-    - Change safe action to display preferences, and allow changing them
-    - Check if $overlays have been specified for widgets with popups
-    - Remove bypass redirect buttons; will be controlled by user preference
-    - Cleanup main window before closing (during teardown)
-    - Need a MainWindow method to transform current talkpage wikitext, for API editing, diffing, and parsing
-       - Then make Show preview and Show changes actions functional (display an overlay dialog)
-       - Then make Save action functional
-    - Display ores prediction somewhere, both value and likelihood percentage
+    - [x] **MUST** Have modes/layouts for edit, prefs, diff, preview -- per second example of https://www.mediawiki.org/wiki/OOUI/Windows/Process_Dialogs#Action_sets 
+    - [ ] **MUST** Actually use user prefrences:
+       - [x] autostart
+       - [ ] autostartRedirects
+       - [ ] autostartNamespaces
+       - [ ] minForShell
+       - [ ] bypassRedirects
+       - [ ] autofillClassFromOthers
+       - [ ] autofillClassFromOres
+       - [ ] autofillImportance
+       - [ ] collapseParamsLowerLimit
+       - [ ] watchlist
+    - [x] **MUST** Have action to display preferences, and allow changing them
+    - [ ] **MUST** Check if $overlays have been specified for widgets with popups
+    - [ ] **MUST** Remove bypass redirect buttons; will be controlled by user preference
+    - [ ] **MUST** Cleanup main window before closing (during teardown)
+    - [ ] **MUST** Have a MainWindow method to transform current talkpage wikitext, for API editing, diffing, and parsing
+       - [ ] Then make Show preview and Show changes actions functional (display an overlay dialog)
+       - [ ] Then make Save action functional
+    - [ ] **MUST** Display ores prediction somewhere
+    - [ ] **MUST** Connect Enter key press events (in text inputs) to the appropriate action
+    - [ ] *SHOULD* Connect menu selection events (in text inputs with lookup menus) to the appropriate action
+    - [ ] *SHOULD* Use labels from templatedata if available
+    - [ ] COULD Have a preference for portlet location
  - [ ] Investigate unit testing
     - Is node-based unit testing even possible, given the reliance on globals like `mw` and `OO`?
     - Look at how v1 is using QUnit unit testing. Maybe replicate or iterate on that.

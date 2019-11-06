@@ -24,7 +24,11 @@ var autoStart = function autoStart() {
 			return;
 		}
 		// Check subject page namespace
-		if ( prefs.autostartNamespaces && !prefs.autostartNamespaces.includes(subjectTitle.getNamespaceId()) ) {
+		if (
+			prefs.autostartNamespaces &&
+			prefs.autostartNamespaces.length &&
+			!prefs.autostartNamespaces.includes(config.mw.wgNamespaceNumber)
+		) {
 			return;
 		}
 	

@@ -31,8 +31,8 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
     - [x] **MUST** Have modes/layouts for edit, prefs, diff, preview -- per second example of https://www.mediawiki.org/wiki/OOUI/Windows/Process_Dialogs#Action_sets 
     - [ ] **MUST** Actually use user prefrences:
        - [x] autostart
-       - [ ] autostartRedirects
-       - [ ] autostartNamespaces
+       - [x] autostartRedirects
+       - [x] autostartNamespaces
        - [ ] minForShell
        - [ ] bypassRedirects
        - [ ] autofillClassFromOthers
@@ -52,6 +52,8 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
     - [ ] *SHOULD* Connect menu selection events (in text inputs with lookup menus) to the appropriate action
     - [ ] *SHOULD* Use labels from templatedata if available
     - [ ] COULD Have a preference for portlet location
+    - [ ] COULD Have a preference to autostart for particular talkpage categories
+    - [ ] COULD Have a preference to autostart for subject-page categories that match a word/regex pattern
  - [ ] Investigate unit testing
     - Is node-based unit testing even possible, given the reliance on globals like `mw` and `OO`?
     - Look at how v1 is using QUnit unit testing. Maybe replicate or iterate on that.

@@ -1,6 +1,6 @@
 import config from "../../config";
 import BannerWidget from "./BannerWidget";
-import { normaliseYesNo } from "../../util";
+import { normaliseYesNo, filterAndMap } from "../../util";
 import ParameterWidget from "./ParameterWidget";
 
 var BannerListWidget = function BannerListWidget( config ) {
@@ -107,6 +107,23 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 BannerListWidget.prototype.setPreferences = function(prefs) {
 	this.preferences = prefs;
 	this.items.forEach(banner => banner.setPreferences(prefs));
+};
+
+BannerListWidget.prototype.makeWikitext = function() {
+	var bannersWikitext = filterAndMap(
+		this.items,
+		banner => !banner.isShellTemplate,
+		banner => banner.makeWikitext()
+	).join("\n");
+	var shellTemplate = this.items.find(banner => banner.isShellTemplate);
+	if (!shellTemplate) {
+		return bannersWikitext;
+	}
+	var shellParam1 = new ParameterWidget({name:"1", value:"\n"+bannersWikitext+"\n"});
+	shellTemplate.parameterList.addItems([ shellParam1 ]);
+	var shellWikitext = shellTemplate.makeWikitext();
+	shellTemplate.parameterList.removeItems([ shellParam1 ]);
+	return shellWikitext;
 };
 
 export default BannerListWidget;

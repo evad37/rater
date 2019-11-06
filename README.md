@@ -44,8 +44,8 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
     - [ ] **MUST** Check if $overlays have been specified for widgets with popups
     - [ ] **MUST** Remove bypass redirect buttons; will be controlled by user preference
     - [ ] **MUST** Cleanup main window before closing (during teardown)
-    - [ ] **MUST** Have a MainWindow method to transform current talkpage wikitext, for API editing, diffing, and parsing
-       - [ ] Then make Show preview and Show changes actions functional (display an overlay dialog)
+    - [x] **MUST** Have a MainWindow method to transform current talkpage wikitext, for API editing, diffing, and parsing
+       - [x] Then make Show preview and Show changes actions functional (display an overlay dialog)
        - [ ] Then make Save action functional
     - [ ] **MUST** Display ores prediction somewhere
     - [ ] **MUST** Connect Enter key press events (in text inputs) to the appropriate action

@@ -4,10 +4,10 @@ import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextIn
 import * as cache from "../cache";
 import {getBannerOptions} from "../getBanners";
 import appConfig from "../config";
-import { filterAndMap, makeErrorMsg } from "../util";
-import ParameterWidget from "./Components/ParameterWidget";
+import { makeErrorMsg, API } from "../util";
 import PrefsFormWidget from "./Components/PrefsFormWidget";
 import { setPrefs as ApiSetPrefs } from "../prefs";
+import { parseTemplates } from "../Template";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -256,6 +256,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 				) )
 			);
 			this.talkWikitext = data.talkWikitext;
+			this.existingBannerNames = data.banners.map( bannerTemplate => bannerTemplate.name );
 			this.talkpage = data.talkpage;
 			this.updateSize();
 		}, this );
@@ -272,11 +273,11 @@ MainWindow.prototype.getReadyProcess = function ( data ) {
 MainWindow.prototype.getActionProcess = function ( action ) {
 	// FIXME: Make these actually do the things.
 	if ( action === "showPrefs" ) {
-		//console.log("[Rater] Prefs clicked!");
 		this.actions.setMode("prefs");
 		this.contentArea.setItem( this.prefsLayout );
 		this.topBar.setDisabled(true);
 		this.updateSize();
+
 	} else if ( action === "savePrefs" ) {
 		var updatedPrefs = this.prefsForm.getPrefs();
 		return new OO.ui.Process().next(
@@ -294,12 +295,13 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 					new OO.ui.Error(
 						$("<div>").append(
 							$("<strong style='display:block;'>").text("Could not save preferences."),
-							$("<span style='color:#777>").text( makeErrorMsg(code, err) )
+							$("<span style='color:#777'>").text( makeErrorMsg(code, err) )
 						)
 					)
 				)
 			)
 		);
+
 	} else if ( action === "closePrefs" ) {
 		console.log("[Rater] Close prefs clicked!");
 		this.actions.setMode("edit");
@@ -307,76 +309,97 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 		this.topBar.setDisabled(false);
 		this.prefsForm.setPrefValues(this.preferences);
 		this.updateSize();
+
 	} else if ( action === "save" ) {
-		var bannersWikitext = filterAndMap(
-			this.bannerList.items,
-			banner => !banner.isShellTemplate,
-			banner => banner.makeWikitext()
-		).join("\n");
-		console.log("Banners", bannersWikitext);
-		var shellTemplate = this.bannerList.items.find(banner => banner.isShellTemplate);
-		if (shellTemplate) {
-			shellTemplate.parameterList.addItems([ new ParameterWidget({name:"1", value:"\n"+bannersWikitext+"\n"}) ]);
-			console.log("Shell+Banners", shellTemplate.makeWikitext());
-		}
+		var bannersWikitext = this.bannerList.makeWikitext();
+		
+		console.log("[Rater] Save clicked!");
+		console.log(bannersWikitext);
+
 		var dialog = this;   
 		return new OO.ui.Process( function () {
 			// Do something about the edit.
 			dialog.close();
 		} );
+
 	} else if ( action === "preview" ) {
-		console.log("[Rater] Preview clicked!");
-		let placeholderHtml = "<div class=\"mw-parser-output\"><table class=\"plainlinks tmbox tmbox-notice\" role=\"presentation\" style=\"background:#FFF;\"><tbody><tr><td class=\"mbox-image\"><a href=\"/wiki/Wikipedia:WikiProject_X\" title=\"Wikipedia:WikiProject X\"><img alt=\"WikiProject X icon.svg\" src=\"//upload.wikimedia.org/wikipedia/commons/thumb/c/c1/WikiProject_X_icon.svg/20px-WikiProject_X_icon.svg.png\" decoding=\"async\" width=\"20\" height=\"20\" srcset=\"//upload.wikimedia.org/wikipedia/commons/thumb/c/c1/WikiProject_X_icon.svg/30px-WikiProject_X_icon.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/c/c1/WikiProject_X_icon.svg/40px-WikiProject_X_icon.svg.png 2x\" data-file-width=\"224\" data-file-height=\"224\" /></a></td><td class=\"mbox-text\">This page is a component of <a href=\"/wiki/Wikipedia:WikiProject_X\" title=\"Wikipedia:WikiProject X\">WikiProject X</a>, a project to enhance the WikiProject experience.</td></tr></tbody></table></div>";
+		return new OO.ui.Process().next(
+			API.post({
+				action: "parse",
+				contentmodel: "wikitext",
+				text: this.transformTalkWikitext(this.talkWikitext),
+				title: this.talkpage.getPrefixedText(),
+				pst: 1
+			}).then( result => {
+				if ( !result || !result.parse || !result.parse.text || !result.parse.text["*"] ) {
+					return $.Deferred().reject("Empty result");
+				}
+				var previewHtmlSnippet = new OO.ui.HtmlSnippet(result.parse.text["*"]);
 
-		this.parsedContentWidget.setLabel(new OO.ui.HtmlSnippet(placeholderHtml));
-		this.parsedContentContainer.setLabel("Preview:");
-		this.actions.setMode("preview");
-		this.contentArea.setItem( this.parsedContentLayout );
-		this.topBar.setDisabled(true);
-		this.updateSize();		
+				this.parsedContentWidget.setLabel(previewHtmlSnippet);
+				this.parsedContentContainer.setLabel("Preview:");
+				this.actions.setMode("preview");
+				this.contentArea.setItem( this.parsedContentLayout );
+				this.topBar.setDisabled(true);
+				this.updateSize();
+			})
+				.catch( (code, err) => $.Deferred().reject(
+					new OO.ui.Error(
+						$("<div>").append(
+							$("<strong style='display:block;'>").text("Could not show changes."),
+							$("<span style='color:#777'>").text( makeErrorMsg(code, err) )
+						)
+					)
+				) )
+		);
+
 	} else if ( action === "changes" ) {
-		console.log("[Rater] Changes clicked!");
-		let placeholderHtml = `<table class="diff diff-contentalign-left" data-mw="interface">
-<colgroup><col class="diff-marker">
-<col class="diff-content">
-<col class="diff-marker">
-<col class="diff-content">
-</colgroup><tbody><tr>
-<td colspan="2" class="diff-lineno">Line 59:</td>
-<td colspan="2" class="diff-lineno">Line 59:</td>
-</tr>
-<tr>
-<td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[:Category:FK LAFC Lučenec players]]</a></div></td>
-<td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FK_LAFC_Lu%C4%8Denec_players" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FK LAFC Lučenec players">[[:Category:FK LAFC Lučenec players]]</a></div></td>
-</tr>
-<tr>
-<td class="diff-marker">−</td>
-<td class="diff-deletedline"><div>[[:Category:<del class="diffchange diffchange-inline">FK</del> <del class="diffchange diffchange-inline">Železiarne</del> Podbrezová managers]]</div></td>
-<td class="diff-marker">+</td>
-<td class="diff-addedline"><div>[[:Category:<ins class="diffchange diffchange-inline">ŽP</ins> <ins class="diffchange diffchange-inline">Šport</ins> Podbrezová managers]]</div></td>
-</tr>
-<tr>
-<td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[:Category:FC Nitra managers]]</a></div></td>
-<td class="diff-marker">&nbsp;</td>
-<td class="diff-context"><div><a href="//en.wikipedia.org/wiki/Category:FC_Nitra_managers" style="text-decoration: none; color: inherit; color: expression(parentElement.currentStyle.color)" title="Category:FC Nitra managers">[[:Category:FC Nitra managers]]</a></div></td>
-</tr>
-</tbody></table>`;
+		return new OO.ui.Process().next(
+			API.post({
+				action: "compare",
+				format: "json",
+				fromtext: this.talkWikitext,
+				fromcontentmodel: "wikitext",
+				totext: this.transformTalkWikitext(this.talkWikitext),
+				tocontentmodel: "wikitext",
+				prop: "diff"
+			})
+				.then( result => {
+					if ( !result || !result.compare || !result.compare["*"] ) {
+						return $.Deferred().reject("Empty result");
+					}
+					var $diff = $("<table>").css("width", "100%").append(
+						$("<tr>").append(
+							$("<th>").attr({"colspan":"2", "scope":"col"}).css("width", "50%").text("Latest revision"),
+							$("<th>").attr({"colspan":"2", "scope":"col"}).css("width", "50%").text("New text")
+						),
+						result.compare["*"]
+					);
 
-		this.parsedContentWidget.setLabel(new OO.ui.HtmlSnippet(placeholderHtml));
-		this.parsedContentContainer.setLabel("Changes:");
-		this.actions.setMode("diff");
-		this.contentArea.setItem( this.parsedContentLayout );
-		this.topBar.setDisabled(true);
-		this.updateSize();	
+					this.parsedContentWidget.setLabel($diff);
+					this.parsedContentContainer.setLabel("Changes:");
+					this.actions.setMode("diff");
+					this.contentArea.setItem( this.parsedContentLayout );
+					this.topBar.setDisabled(true);
+					this.updateSize();
+				} )
+				.catch( (code, err) => $.Deferred().reject(
+					new OO.ui.Error(
+						$("<div>").append(
+							$("<strong style='display:block;'>").text("Could not show changes."),
+							$("<span style='color:#777'>").text( makeErrorMsg(code, err) )
+						)
+					)
+				) )
+		);
+
 	} else if ( action === "back" ) {
 		this.actions.setMode("edit");
 		this.contentArea.setItem( this.editLayout );
 		this.topBar.setDisabled(false);
 		this.updateSize();
 	}
+
 	return MainWindow.super.prototype.getActionProcess.call( this, action );
 };
 
@@ -418,6 +441,44 @@ MainWindow.prototype.onSearchSelect = function() {
 			this.bannerList.addItems( [banner] );
 			this.updateSize();
 		});
+};
+
+MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {
+	var bannersWikitext = this.bannerList.makeWikitext();
+	if (!talkWikitext) {
+		return bannersWikitext.trim();
+	}
+	// Reparse templates, in case talkpage wikitext has changed
+	var talkTemplates = parseTemplates(talkWikitext, true);
+	// replace existing banners wikitext with a control character
+	talkTemplates.forEach(template => {
+		if (this.existingBannerNames.includes(template.name)) {
+			talkWikitext = talkWikitext.replace(template.wikitext, "\x01");
+		}
+	});
+	// replace insertion point (first control character) with a different control character
+	talkWikitext = talkWikitext.replace("\x01", "\x02");
+	// remove other control characters
+	/* eslint-disable-next-line no-control-regex */
+	talkWikitext = talkWikitext.replace(/(?:\s|\n)*\x01(?:\s|\n)*/g,"");
+	// split into wikitext before/after the remaining control character (and trim each section)
+	var talkWikitextSections = talkWikitext.split("\x02").map(t => t.trim());
+	if (talkWikitextSections.length === 2) {
+		// Found the insertion point for the banners
+		return (talkWikitextSections[0] + "\n" + bannersWikitext.trim() + "\n" + talkWikitextSections[1]).trim();
+	}
+	// Check if there's anything beside templates
+	var tempStr = talkWikitext;
+	talkTemplates.forEach(template => {
+		tempStr = tempStr.replace(template.wikitext, "");
+	});
+	if (tempStr.trim()) {
+		// There is non-template content, so insert at the start
+		return bannersWikitext.trim() + "\n" + talkWikitext.trim();
+	} else {
+		// Everything is a template, so insert at the end
+		return talkWikitext.trim() + "\n" + bannersWikitext.trim();
+	}
 };
 
 export default MainWindow;

@@ -25,7 +25,7 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
  - [ ] Finish writing app (min viable product - same or better functionality than v1)
     - [ ] **MUST** Autofill listas parameter for biography banner
     - [ ] **MUST** have access keys for save, show preview, show changes
-    - [ ] **MUST** Visually indicate parameters with null values are invalid and will not be included in saved wikitext. These are:
+    - [x] **MUST** Visually indicate parameters with null values are invalid and will not be included in saved wikitext. These are:
        - Autofilled required/suggested parameters that don't have an autovalue, or
        - Parameters with a single allowed value that have been unchecked 
     - [x] **MUST** Have modes/layouts for edit, prefs, diff, preview -- per second example of https://www.mediawiki.org/wiki/OOUI/Windows/Process_Dialogs#Action_sets 

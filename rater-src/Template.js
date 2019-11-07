@@ -422,11 +422,11 @@ Template.prototype.addMissingParams = function() {
 				}
 			}
 			// No non-empty aliases, so add this to the parameters list (with
-			// value set parameter to either the autovaule, or an empty string).
+			// value set parameter to either the autovaule, or as null).
 			// Also set that it was autofilled.
 			thisTemplate.parameters.push({
 				name:paraName,
-				value: paraData.autovalue || "",
+				value: paraData.autovalue || null,
 				autofilled: true,
 			});
 		}
@@ -436,7 +436,7 @@ Template.prototype.addMissingParams = function() {
 
 Template.prototype.setClassesAndImportances = function() {
 	var parsed = $.Deferred();
-	
+
 	if ( (this.classes && this.importances) || this.isShellTemplate() ) {
 		return parsed.resolve();
 	}

@@ -9,6 +9,7 @@ function ParameterWidget( parameter, paramData, config ) {
 	this.name = parameter.name;
 	this.value = parameter.value;
 	this.autofilled = parameter.autofilled;
+	this.isInvalid = parameter.value == null;
 	this.paramData = paramData || {};
 	this.allowedValues = this.paramData.allowedValues || [];
 	this.isRequired = this.paramData.required;
@@ -125,6 +126,12 @@ function ParameterWidget( parameter, paramData, config ) {
 
 	/* --- READ (COLLAPSED) DISPLAY OF PARAMETER --- */
 
+	this.invalidIcon = new OO.ui.IconWidget( {
+		icon: "block",
+		title: "Invalid parameter: no value specified!",
+		flags: "destructive",
+		$element: $("<span style='margin: 0 5px 0 -5px; min-width: 16px; width: 16px;'>")
+	} ).toggle(this.isInvalid);
 	this.fullLabel = new OO.ui.LabelWidget({
 		label:this.name +
 			(this.value
@@ -155,16 +162,17 @@ function ParameterWidget( parameter, paramData, config ) {
 
 	this.readLayout = new OO.ui.HorizontalLayout({
 		items: [
+			this.invalidIcon,
 			this.fullLabel,
 			this.editButton
 		],
 		$element: $("<span style='margin:0;width:unset;'>")
 	});
 	if (this.checkbox) {
-		this.readLayout.addItems([this.checkbox], 1);
+		this.readLayout.addItems([this.checkbox], 2);
 	}
 	if (this.autofilled) {
-		this.readLayout.addItems([this.autofilledIcon], 1);
+		this.readLayout.addItems([this.autofilledIcon], 2);
 	}
 
 	/* --- CONTAINER FOR BOTH LAYOUTS --- */
@@ -176,7 +184,7 @@ function ParameterWidget( parameter, paramData, config ) {
 			"border-radius": "10px",
 			"padding-left": "10px",
 			"margin": "0 8px 8px 0",
-			"background": "#fffe"
+			"background": this.isInvalid ? "#fddd" : "#fffe"
 		})
 		.append(this.readLayout.$element, this.editLayout.$element);
     
@@ -193,6 +201,7 @@ OO.inheritClass( ParameterWidget, OO.ui.Widget );
 ParameterWidget.prototype.onEditClick = function() {
 	this.readLayout.toggle(false);
 	this.editLayout.toggle(true);
+	this.$element.css({"background": "#fffe"});
 	this.input.focus();
 };
 
@@ -237,7 +246,11 @@ ParameterWidget.prototype.setValue = function(val) {
 	// Update the input value for edit mode
 	this.input.setValue(this.value);
 
-	
+	// Update validity
+	this.isInvalid = this.value == null;
+	this.invalidIcon.toggle(this.isInvalid);
+	this.$element.css({"background": this.isInvalid ? "#fddd" : "#fffe"});
+
 	// Updated the label for read mode
 	this.fullLabel.setLabel(
 		this.name +
@@ -280,6 +293,9 @@ ParameterWidget.prototype.setAutofilled = function() {
 };
 
 ParameterWidget.prototype.makeWikitext = function(pipeStyle, equalsStyle) {
+	if (this.isInvalid) {
+		return "";
+	}
 	return pipeStyle + this.name + equalsStyle + (this.value||"");
 };
 

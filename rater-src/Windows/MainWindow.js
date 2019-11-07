@@ -231,7 +231,10 @@ MainWindow.prototype.initialize = function () {
 
 	/* --- EVENT HANDLING --- */
 
-	this.searchBox.connect(this, {"enter": "onSearchSelect" });
+	this.searchBox.connect(this, {
+		"enter": "onSearchSelect",
+		"choose": "onSearchSelect"
+	});
 	this.addBannerButton.connect(this, {"click": "onSearchSelect"});
 };
 
@@ -256,7 +259,8 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 			this.bannerList.addItems(
 				data.banners.map( bannerTemplate => new BannerWidget(
 					bannerTemplate,
-					{ preferences: this.preferences }
+					{ preferences: this.preferences,
+						$overlay: this.$overlay }
 				) )
 			);
 			this.talkWikitext = data.talkWikitext;
@@ -426,8 +430,10 @@ MainWindow.prototype.setPreferences = function(prefs) {
 };
 
 MainWindow.prototype.onSearchSelect = function() {
+	this.searchBox.pushPending();
 	var name = this.searchBox.getValue().trim();
 	if (!name) {
+		this.searchBox.popPending();
 		return;
 	}
 	var existingBanner = this.bannerList.items.find(banner => {
@@ -436,6 +442,7 @@ MainWindow.prototype.onSearchSelect = function() {
 	if (existingBanner) {
 		// TODO: show error message
 		console.log("There is already a {{" + name + "}} banner");
+		this.searchBox.popPending();
 		return;
 	}
 	if (!/^[Ww](?:P|iki[Pp]roject)/.test(name)) {
@@ -452,10 +459,12 @@ MainWindow.prototype.onSearchSelect = function() {
 		console.log(noNewDabMessage);
 	}
 	// Create Template object
-	BannerWidget.newFromTemplateName(name, {preferences: this.preferences})
+	BannerWidget.newFromTemplateName(name, {preferences: this.preferences, $overlay: this.$overlay})
 		.then(banner => {
 			this.bannerList.addItems( [banner] );
 			this.updateSize();
+			this.searchBox.setValue("");
+			this.searchBox.popPending();
 		});
 };
 

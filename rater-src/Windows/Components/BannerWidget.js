@@ -9,6 +9,7 @@ function BannerWidget( template, config ) {
 	config = config || {};
 	// Call parent constructor
 	BannerWidget.super.call( this, config );
+	this.$overlay = config.$overlay;
 
 	/* --- PREFS --- */
 	this.preferences = config.preferences;
@@ -55,6 +56,7 @@ function BannerWidget( template, config ) {
 	this.mainLabelPopupButton = new OO.ui.PopupButtonWidget( {
 		label: "{{" + template.getTitle().getMainText() + "}}",
 		$element: $("<span style='display:inline-block;width:48%;margin-right:0;padding-right:8px'>"),
+		$overlay: this.$overlay,
 		indicator:"down",
 		framed:false,
 		popup: {
@@ -137,7 +139,7 @@ function BannerWidget( template, config ) {
 			}
 			return param.name !== "class" && param.name !== "importance";
 		},
-		param => new ParameterWidget(param, template.paramData[param.name])
+		param => new ParameterWidget(param, template.paramData[param.name], {$overlay: this.$overlay})
 	);
 
 	this.parameterList = new ParameterListWidget( {
@@ -154,7 +156,9 @@ function BannerWidget( template, config ) {
 		validate: function(val) {
 			let {validName, name, value} = this.getAddParametersInfo(val);
 			return (!name && !value) ? true : validName;
-		}.bind(this)
+		}.bind(this),
+		allowSuggestionsWhenEmpty: true,
+		$overlay: this.$overlay
 	});
 	this.addParameterValueInput = new SuggestionLookupTextInputWidget({
 		placeholder: "parameter value",
@@ -162,7 +166,9 @@ function BannerWidget( template, config ) {
 		validate: function(val) {
 			let {validValue, name, value} = this.getAddParametersInfo(null, val);
 			return (!name && !value) ? true : validValue;
-		}.bind(this)
+		}.bind(this),
+		allowSuggestionsWhenEmpty: true,
+		$overlay: this.$overlay
 	});
 	this.addParameterButton = new OO.ui.ButtonWidget({
 		label: "Add",
@@ -225,8 +231,16 @@ function BannerWidget( template, config ) {
 	this.parameterList.connect( this, { "change": "onParameterChange" } );
 	this.parameterList.connect( this, { "addParametersButtonClick": "showAddParameterInputs" } );
 	this.addParameterButton.connect(this, { "click": "onParameterAdd" });
-	this.addParameterNameInput.connect(this, { "change": "onAddParameterNameChange"});
-	this.addParameterValueInput.connect(this, { "change": "onAddParameterValueChange"});
+	this.addParameterNameInput.connect(this, {
+		"change": "onAddParameterNameChange",
+		"enter": "onAddParameterNameEnter",
+		"choose": "onAddParameterNameEnter"
+	});
+	this.addParameterValueInput.connect(this, {
+		"change": "onAddParameterValueChange",
+		"enter": "onAddParameterValueEnter",
+		"choose": "onAddParameterValueEnter"
+	});
 	this.removeButton.connect(this, {"click": "onRemoveButtonClick"}, );
 	this.clearButton.connect( this, {"click": "onClearButtonClick"} );
 
@@ -295,7 +309,7 @@ BannerWidget.prototype.getAddParametersInfo = function(nameInputVal, valueInputV
 	var paramAlreadyIncluded = name === "class" ||
 		name === "importance" ||
 		(name === "1" && this.isShellTemplate) ||
-		this.parameterList.items.some(paramWidget => paramWidget.parameter && paramWidget.parameter.name === name);
+		this.parameterList.getParameterItems().some(paramWidget => paramWidget.name === name);
 	var value = valueInputVal && valueInputVal.trim() || this.addParameterValueInput.getValue().trim();
 	var autovalue = name && this.paramData[name] && this.paramData[name].autovalue || null;
 	return {
@@ -326,10 +340,25 @@ BannerWidget.prototype.onAddParameterNameChange = function() {
 	this.addParameterLayout.setErrors( isAlreadyIncluded ? ["Parameter is already present"] : [] );
 };
 
+BannerWidget.prototype.onAddParameterNameEnter = function() {
+	this.addParameterValueInput.focus();
+};
+
 BannerWidget.prototype.onAddParameterValueChange = function() {
 	let { validName, validValue, isAutovalue } = this.getAddParametersInfo();
 	this.addParameterButton.setDisabled(!validName || !validValue);
 	this.addParameterLayout.setNotices( validName && isAutovalue ? ["Parameter value will be autofilled"] : [] ); 
+};
+
+BannerWidget.prototype.onAddParameterValueEnter = function() {
+	// Make sure button state has been updated
+	this.onAddParameterValueChange();
+	// Do nothing if button is disabled (i.e. name and/or value are invalid)
+	if ( this.addParameterButton.isDisabled() ) {
+		return;
+	}
+	// Add parameter
+	this.onParameterAdd();
 };
 
 BannerWidget.prototype.onParameterAdd = function() {
@@ -343,12 +372,13 @@ BannerWidget.prototype.onParameterAdd = function() {
 			"name": name,
 			"value": value || autovalue
 		},
-		this.paramData[name]
+		this.paramData[name],
+		{$overlay: this.$overlay}
 	);
 	this.parameterList.addItems([newParameter]);
 	this.addParameterNameInput.setValue("");
 	this.addParameterValueInput.setValue("");
-	this.addParameterNameInput.focus();
+	this.addParameterNameInput.$input.focus();
 };
 
 BannerWidget.prototype.onRemoveButtonClick = function() {

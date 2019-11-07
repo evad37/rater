@@ -5,6 +5,7 @@ function ParameterWidget( parameter, paramData, config ) {
 	config = config || {};
 	// Call parent constructor
 	ParameterWidget.super.call( this, config );
+	this.$overlay = config.$overlay;
     
 	this.name = parameter.name;
 	this.value = parameter.value;
@@ -51,7 +52,8 @@ function ParameterWidget( parameter, paramData, config ) {
 			val => val!==null,
 			val => ({data: val, label:val})
 		),
-		$element: $("<div style='margin-bottom:0;'>")
+		$element: $("<div style='margin-bottom:0;'>"),
+		$overlay: this.$overlay
 	} );
 	// Reduce the excessive whitespace/height
 	this.input.$element.find("input").css({
@@ -288,7 +290,7 @@ ParameterWidget.prototype.setAutofilled = function() {
 	}
 	this.autofilled = true;
 	this.autofilledIcon.toggle(true);
-	this.readLayout.addItems([this.autofilledIcon], 1);
+	this.readLayout.addItems([this.autofilledIcon], 2);
 	this.$element.css({"border": "1px dashed #36c"});
 };
 

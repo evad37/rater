@@ -36,4 +36,12 @@ SuggestionLookupTextInputWidget.prototype.getLookupMenuOptionsFromData = functio
 	return this.suggestions.filter(labelMatchesInputVal).map(makeMenuOptionWidget);
 };
 
+// Extend onLookupMenuItemChoose method to emit an choose event
+SuggestionLookupTextInputWidget.prototype.onLookupMenuItemChoose = function ( item ) {
+	// First blur the input, to prevent the menu popping back up
+	this.$input.blur();
+	OO.ui.mixin.LookupElement.prototype.onLookupMenuItemChoose.call(this, item);
+	this.emit("choose", item.getData() );
+};
+
 export default SuggestionLookupTextInputWidget;

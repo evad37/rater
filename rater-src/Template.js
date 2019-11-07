@@ -404,10 +404,42 @@ Template.prototype.setParamDataAndSuggestions = function() {
 	return paramDataSet;	
 };
 
+var makeListAs = function(subjectTitle) {
+	var name = subjectTitle.getMainText().replace(/\s\(.*\)/, "");
+	if ( name.indexOf(" ") === -1 ) {
+		return name;
+	}
+	var generationalSuffix = "";
+	if ( / (?:[JS]r.?|[IVX]+)$/.test(name) ) {
+		generationalSuffix = name.slice(name.lastIndexOf(" "));
+		name = name.slice(0, name.lastIndexOf(" "));
+		if ( name.indexOf(" ") === -1 ) {
+			return name + generationalSuffix;
+		}
+	}
+	var lastName = name.slice(name.lastIndexOf(" ")+1).replace(/,$/, "");
+	var otherNames = name.slice(0, name.lastIndexOf(" "));
+	return lastName + ", " + otherNames + generationalSuffix;
+};
+
 Template.prototype.addMissingParams = function() {
 	var thisTemplate = this;
+
+	// Autofill listas parameter for WP:BIO
+	var isBiographyBanner = this.getTitle().getMainText() === "WikiProject Biography" ||
+		(this.redirectTarget && this.redirectTarget.getMainText() === "WikiProject Biography");
+
+	if (isBiographyBanner && !this.getParam("listas")) {
+		var subjectTitle = mw.Title.newFromText(config.mw.wgPageName).getSubjectPage();
+		this.parameters.push({
+			name: "listas",
+			value: makeListAs(subjectTitle),
+			autofilled: true,
+		});
+	}
+
+	// Make sure required/suggested parameters are present
 	$.each(thisTemplate.paramData, function(paraName, paraData) {
-		// Make sure required/suggested parameters are present
 		if ( (paraData.required || paraData.suggested) && !thisTemplate.getParam(paraName) ) {
 			// Check if already present in an alias, if any
 			if ( paraData.aliases.length ) {
@@ -431,6 +463,7 @@ Template.prototype.addMissingParams = function() {
 			});
 		}
 	});
+
 	return thisTemplate;
 };
 

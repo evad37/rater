@@ -36,17 +36,20 @@ MainWindow.static.actions = [
 	// Others (bottom)
 	{
 		action: "save",
+		accessKey: "s",
 		label: new OO.ui.HtmlSnippet("<span style='padding:0 1em;'>Save</span>"),
 		flags: ["primary", "progressive"],
 		modes: ["edit", "diff", "preview"] // available when current mode isn't "prefs"
 	},
 	{
 		action: "preview",
+		accessKey: "p",
 		label: "Show preview",
 		modes: ["edit", "diff"] // available when current mode isn't "preview" or "prefs"
 	},
 	{
 		action: "changes",
+		accessKey: "v",
 		label: "Show changes",
 		modes: ["edit", "preview"] // available when current mode isn't "diff" or "prefs"
 	},

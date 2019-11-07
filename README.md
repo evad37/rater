@@ -24,7 +24,7 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 ## TODO
  - [ ] Finish writing app (min viable product - same or better functionality than v1)
     - [ ] **MUST** Autofill listas parameter for biography banner
-    - [ ] **MUST** have access keys for save, show preview, show changes
+    - [x] **MUST** have access keys for save, show preview, show changes
     - [x] **MUST** Visually indicate parameters with null values are invalid and will not be included in saved wikitext. These are:
        - Autofilled required/suggested parameters that don't have an autovalue, or
        - Parameters with a single allowed value that have been unchecked 

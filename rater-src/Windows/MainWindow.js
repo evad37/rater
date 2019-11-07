@@ -168,7 +168,8 @@ MainWindow.prototype.initialize = function () {
 		this.searchBox,
 		this.addBannerButton,
 		this.setAllDropDown,
-		this.menuButtons
+		this.removeAllButton,
+		this.clearAllButton
 	].forEach(widget => widget.setDisabled(disable))
 	);
 
@@ -401,6 +402,18 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 	}
 
 	return MainWindow.super.prototype.getActionProcess.call( this, action );
+};
+
+// Use the getTeardownProcess() method to perform actions whenever the dialog is closed.
+// `data` is the data passed into the window's .close() method.
+MainWindow.prototype.getTeardownProcess = function ( data ) {
+	return MainWindow.super.prototype.getTeardownProcess.call( this, data )
+		.first( () => {
+			this.bannerList.clearItems();
+			this.searchBox.setValue("");
+			this.contentArea.setItem( this.editLayout );
+			this.topBar.setDisabled(false);
+		} );
 };
 
 MainWindow.prototype.setPreferences = function(prefs) {

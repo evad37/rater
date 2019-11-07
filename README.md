@@ -42,7 +42,7 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
        - [ ] watchlist
     - [x] **MUST** Have action to display preferences, and allow changing them
     - [ ] **MUST** Check if $overlays have been specified for widgets with popups
-    - [ ] **MUST** Remove bypass redirect buttons; will be controlled by user preference
+    - [x] **MUST** Remove bypass redirect buttons; will be controlled by user preference
     - [x] **MUST** Cleanup main window before closing (during teardown)
     - [x] **MUST** Have a MainWindow method to transform current talkpage wikitext, for API editing, diffing, and parsing
        - [x] Then make Show preview and Show changes actions functional (display an overlay dialog)

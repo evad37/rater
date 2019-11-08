@@ -1,4 +1,5 @@
-import { API, isAfterDate } from "./util";
+import API from "./api";
+import { isAfterDate } from "./util";
 import config from "./config";
 import * as cache from "./cache";
 

@@ -1,6 +1,6 @@
 import config from "./config";
 import { getPrefs } from "./prefs";
-import {API, makeErrorMsg} from "./util";
+import API, { makeErrorMsg } from "./api";
 import setupRater from "./setup";
 
 var autoStart = function autoStart() {

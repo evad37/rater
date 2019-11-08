@@ -1,4 +1,5 @@
-import {API, isAfterDate, makeErrorMsg} from "./util";
+import API, { makeErrorMsg } from "./api";
+import { isAfterDate } from "./util";
 import * as cache from "./cache";
 
 var cacheBanners = function(banners, bannerOptions) {

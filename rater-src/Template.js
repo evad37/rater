@@ -1,4 +1,5 @@
-import {API, isAfterDate, mostFrequent} from "./util";
+import API from "./api";
+import {isAfterDate, mostFrequent} from "./util";
 import config from "./config";
 import * as cache from "./cache";
 

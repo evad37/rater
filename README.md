@@ -47,7 +47,7 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
     - [x] **MUST** Have a MainWindow method to transform current talkpage wikitext, for API editing, diffing, and parsing
        - [x] Then make Show preview and Show changes actions functional (display an overlay dialog)
        - [ ] Then make Save action functional
-    - [ ] **MUST** Display ores prediction somewhere
+    - [x] **MUST** Display ores prediction somewhere
     - [x] **MUST** Connect Enter key press events (in text inputs) to the appropriate action
     - [x] *SHOULD* Connect menu selection events (in text inputs with lookup menus) to the appropriate action
     - [ ] *SHOULD* Use labels from templatedata if available

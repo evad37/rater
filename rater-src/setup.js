@@ -1,5 +1,5 @@
 import config from "./config";
-import {API} from "./util";
+import API from "./api";
 import { parseTemplates, getWithRedirectTo } from "./Template";
 import {getBannerNames} from "./getBanners";
 import * as cache from "./cache";
@@ -124,11 +124,14 @@ var setupRater = function(clickEvent) {
 			}
 			return API.getORES(latestRevId)
 				.then(function(result) {
-					var data = result.enwiki.scores[latestRevId].wp10;
+					var data = result.enwiki.scores[latestRevId].articlequality;
 					if ( data.error ) {
 						return $.Deferred().reject(data.error.type, data.error.message);
 					}
-					return data.score.prediction;
+					return {
+						"prediction": data.score.prediction,
+						"probability": (data.score.probability[ data.score.prediction ]*100).toFixed(1)+"%"
+					};
 				});
 		});
 	}
@@ -171,7 +174,7 @@ var setupRater = function(clickEvent) {
 				result.redirectTarget = redirectTarget;
 			}
 			if (oresPredicition) {
-				result.oresPredicition = oresPredicition;
+				result.ores = oresPredicition;
 			}
 			windowManager.closeWindow("loadDialog", result);
 			

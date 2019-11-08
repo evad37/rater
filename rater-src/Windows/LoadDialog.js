@@ -1,4 +1,4 @@
-import {makeErrorMsg} from "../util";
+import { makeErrorMsg } from "../api";
 
 /* var incrementProgressByInterval = function() {
 	var incrementIntervalDelay = 100;

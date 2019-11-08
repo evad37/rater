@@ -4,10 +4,11 @@ import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextIn
 import * as cache from "../cache";
 import {getBannerOptions} from "../getBanners";
 import appConfig from "../config";
-import { makeErrorMsg, API } from "../util";
+import API, { makeErrorMsg } from "../api";
 import PrefsFormWidget from "./Components/PrefsFormWidget";
 import { setPrefs as ApiSetPrefs } from "../prefs";
 import { parseTemplates } from "../Template";
+import config from "../config";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -15,7 +16,13 @@ function MainWindow( config ) {
 OO.inheritClass( MainWindow, OO.ui.ProcessDialog );
 
 MainWindow.static.name = "main";
-MainWindow.static.title = "Rater";
+MainWindow.static.title = $("<span>").css({"font-weight":"normal"}).append(
+	$("<a>").css({"font-weight": "bold"}).attr({"href": mw.util.getUrl("WP:RATER"), "target": "_blank"}).text("Rater"),
+	" (",
+	$("<a>").attr({"href": mw.util.getUrl("WT:RATER"), "target": "_blank"}).text("talk"),
+	") ",
+	$("<span>").css({"font-size":"90%"}).text("v"+config.script.version)
+);
 MainWindow.static.size = "large";
 MainWindow.static.actions = [
 	// Primary (top right):
@@ -179,6 +186,29 @@ MainWindow.prototype.initialize = function () {
 	// Append to the default dialog header
 	this.$head.css({"height":"73px"}).append(this.topBar.$element);
 
+	/* --- FOOTER --- */
+	this.oresLabel = new OO.ui.LabelWidget({
+		$element: $("<span style='float:right; padding: 10px; max-width: 33.33%; text-align: center;'>"),
+		label: $("<span>").append(
+			$("<a>")
+				.attr({"href":mw.util.getUrl("mw:ORES"), "target":"_blank"})
+				.append(
+					$("<img>")
+						.css({"vertical-align": "text-bottom;"})
+						.attr({
+							"src": "//upload.wikimedia.org/wikipedia/commons/thumb/5/51/Objective_Revision_Evaluation_Service_logo.svg/40px-Objective_Revision_Evaluation_Service_logo.svg.png",
+							"title": "Machine predicted quality from ORES",
+							"alt": "ORES logo",
+							"width": "20px",
+							"height": "20px"
+						})
+				),
+			" ",
+			$("<span class='oresPrediction'>")
+		)
+	}).toggle(false);
+	this.$foot.prepend(this.oresLabel.$element);
+
 	/* --- CONTENT AREA --- */
 
 	// Banners added dynamically upon opening, so just need a layout with an empty list
@@ -263,6 +293,14 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 						$overlay: this.$overlay }
 				) )
 			);
+			if (data.ores) {
+				this.oresClass = data.ores.prediction;
+				this.oresLabel.toggle(true).$element.find(".oresPrediction").append(
+					$("<strong>").text(data.ores.prediction),
+					"&nbsp;(" + data.ores.probability + ")"
+				);
+			}
+
 			this.talkWikitext = data.talkWikitext;
 			this.existingBannerNames = data.banners.map( bannerTemplate => bannerTemplate.name );
 			this.talkpage = data.talkpage;
@@ -420,6 +458,7 @@ MainWindow.prototype.getTeardownProcess = function ( data ) {
 			this.searchBox.setValue("");
 			this.contentArea.setItem( this.editLayout );
 			this.topBar.setDisabled(false);
+			this.oresLabel.toggle(false).$element.find(".oresPrediction").empty();
 		} );
 };
 

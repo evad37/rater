@@ -195,13 +195,6 @@ var setupRater = function(clickEvent) {
 		}
 		cache.clearInvalidItems();
 	});
-
-	// TESTING purposes only: log passed data to console
-	setupCompletedPromise.then(
-		data => console.log("setup window closed", data),
-		(code, info) => console.log("setup window closed with error", {code, info})
-	);
-
 	return setupCompletedPromise;
 };
 

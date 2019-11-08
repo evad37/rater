@@ -382,33 +382,36 @@ MainWindow.prototype.onSearchSelect = function() {
 	var existingBanner = this.bannerList.items.find(banner => {
 		return banner.mainText === name ||	banner.redirectTargetMainText === name;
 	});
+
+	// Abort and show alert if banner already exists
 	if (existingBanner) {
-		// TODO: show error message
-		console.log("There is already a {{" + name + "}} banner");
 		this.topBar.searchBox.popPending();
-		return;
+		return OO.ui.alert("There is already a {{" + name + "}} banner");
 	}
+
+	// Confirmation required for banners missing WikiProject from name, and for uncreated disambiguation talk pages
+	var confirmText;
 	if (!/^[Ww](?:P|iki[Pp]roject)/.test(name)) {
-		var message = new OO.ui.HtmlSnippet(
-			"<code>{{" + name + "}}</code> is not a recognised WikiProject banner.<br/>Do you want to continue?"
+		confirmText = new OO.ui.HtmlSnippet(
+			"{{" + name + "}} is not a recognised WikiProject banner.<br/>Do you want to continue?"
 		);
-		// TODO: ask for confirmation
-		console.log(message);
-	}
-	if (name === "WikiProject Disambiguation" && $("#ca-talk.new").length !== 0 && this.bannerList.items.length === 0) {
+	} else if (name === "WikiProject Disambiguation" && $("#ca-talk.new").length !== 0 && this.bannerList.items.length === 0) {
 		// eslint-disable-next-line no-useless-escape
-		var noNewDabMessage = "New talk pages shouldn't be created if they will only contain the \{\{WikiProject Disambiguation\}\} banner. Continue?";
+		confirmText = "New talk pages shouldn't be created if they will only contain the \{\{WikiProject Disambiguation\}\} banner. Continue?";
 		// TODO: ask for confirmation
-		console.log(noNewDabMessage);
 	}
-	// Create Template object
-	BannerWidget.newFromTemplateName(name, {preferences: this.preferences, $overlay: this.$overlay})
-		.then(banner => {
-			this.bannerList.addItems( [banner] );
-			this.updateSize();
-			this.topBar.searchBox.setValue("");
-			this.topBar.searchBox.popPending();
-		});
+	$.when( confirmText ? OO.ui.confirm(confirmText) : true)
+		.then( confirmed => {
+			if (!confirmed) return;
+			// Create Template object
+			return BannerWidget.newFromTemplateName(name, {preferences: this.preferences, $overlay: this.$overlay})
+				.then(banner => {
+					this.bannerList.addItems( [banner] );
+					this.updateSize();
+				});
+		}
+		)
+		.then( () => this.topBar.searchBox.setValue("").popPending() );
 };
 
 MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {

@@ -1,14 +1,11 @@
 import BannerWidget from "./Components/BannerWidget";
 import BannerListWidget from "./Components/BannerListWidget";
-import SuggestionLookupTextInputWidget from "./Components/SuggestionLookupTextInputWidget";
-import * as cache from "../cache";
-import {getBannerOptions} from "../getBanners";
 import appConfig from "../config";
 import API, { makeErrorMsg } from "../api";
 import PrefsFormWidget from "./Components/PrefsFormWidget";
 import { setPrefs as ApiSetPrefs } from "../prefs";
 import { parseTemplates } from "../Template";
-import config from "../config";
+import TopBarWidget from "./Components/TopBarWidget";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -21,7 +18,7 @@ MainWindow.static.title = $("<span>").css({"font-weight":"normal"}).append(
 	" (",
 	$("<a>").attr({"href": mw.util.getUrl("WT:RATER"), "target": "_blank"}).text("talk"),
 	") ",
-	$("<span>").css({"font-size":"90%"}).text("v"+config.script.version)
+	$("<span>").css({"font-size":"90%"}).text("v"+appConfig.script.version)
 );
 MainWindow.static.size = "large";
 MainWindow.static.actions = [
@@ -90,100 +87,9 @@ MainWindow.prototype.initialize = function () {
 	this.preferences = appConfig.defaultPrefs;
 	
 	/* --- TOP BAR --- */
-	
-	// Search box
-	this.searchBox = new SuggestionLookupTextInputWidget( {
-		placeholder: "Add a WikiProject...",
-		suggestions: cache.read("bannerOptions"),
-		$element: $("<div style='display:inline-block;margin-right:-1px;width:calc(100% - 45px);'>"),
-		$overlay: this.$overlay,
+	this.topBar = new TopBarWidget({
+		$overlay: this.$overlay
 	} );
-	getBannerOptions().then(bannerOptions => this.searchBox.setSuggestions(bannerOptions));
-	this.addBannerButton = new OO.ui.ButtonWidget( {
-		icon: "add",
-		title: "Add",
-		flags: "progressive",
-		$element: $("<span style='float:right;margin:0'>"),
-	} );
-	var $searchContainer = $("<div style='display:inline-block;width: calc(100% - 220px);min-width: 220px;float:left'>")
-		.append(this.searchBox.$element, this.addBannerButton.$element);
-
-	// Set all classes/importances, in the style of a popup button with a menu.
-	// (Is actually a dropdown with a hidden label, because that makes the coding easier.)
-	this.setAllDropDown = new OO.ui.DropdownWidget( {
-		icon: "tag",
-		label: "Set all...",
-		invisibleLabel: true,
-		menu: {
-			items: [
-				new OO.ui.MenuSectionOptionWidget( {
-					label: "Classes"
-				} ),
-				...appConfig.bannerDefaults.classes.map(classname => new OO.ui.MenuOptionWidget( {
-					data: {class: classname.toLowerCase()},
-					label: classname
-				} )
-				),
-				new OO.ui.MenuSectionOptionWidget( {
-					label: "Importances"
-				} ),
-				...appConfig.bannerDefaults.importances.map(importance => new OO.ui.MenuOptionWidget( {
-					data: {importance: importance.toLowerCase()},
-					label: importance
-				} )
-				)
-			]
-		},
-		$element: $("<span style=\"width:auto;display:inline-block;float:left;margin:0\" title='Set all...'>"),
-		$overlay: this.$overlay,
-	} );
-
-	// Remove all banners button
-	this.removeAllButton = new OO.ui.ButtonWidget( {
-		icon: "trash",
-		title: "Remove all",
-		flags: "destructive"
-	} );
-
-	// Clear all parameters button
-	this.clearAllButton = new OO.ui.ButtonWidget( {
-		icon: "cancel",
-		title: "Clear all",
-		flags: "destructive"
-	} );
-
-	// Group the buttons together
-	this.menuButtons = new OO.ui.ButtonGroupWidget( {
-		items: [
-			this.removeAllButton,
-			this.clearAllButton
-		],
-		$element: $("<span style='float:left;'>"),
-	} );
-	this.menuButtons.$element.prepend(this.setAllDropDown.$element);
-
-	// Put everything into a layout
-	this.topBar = new OO.ui.PanelLayout( {
-		expanded: false,
-		framed: false,
-		padded: false,
-		$element: $("<div style='position:fixed;width:100%;background:#ccc'>")
-	} );
-	this.topBar.$element.append(
-		$searchContainer,
-		//this.setAllDropDown.$element,
-		this.menuButtons.$element
-	);
-	this.topBar.setDisabled = (disable => [
-		this.searchBox,
-		this.addBannerButton,
-		this.setAllDropDown,
-		this.removeAllButton,
-		this.clearAllButton
-	].forEach(widget => widget.setDisabled(disable))
-	);
-
-	// Append to the default dialog header
 	this.$head.css({"height":"73px"}).append(this.topBar.$element);
 
 	/* --- FOOTER --- */
@@ -261,11 +167,7 @@ MainWindow.prototype.initialize = function () {
 
 	/* --- EVENT HANDLING --- */
 
-	this.searchBox.connect(this, {
-		"enter": "onSearchSelect",
-		"choose": "onSearchSelect"
-	});
-	this.addBannerButton.connect(this, {"click": "onSearchSelect"});
+	this.topBar.connect(this, {"searchSelect": "onSearchSelect"});
 };
 
 // Override the getBodyHeight() method to specify a custom height
@@ -312,7 +214,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 MainWindow.prototype.getReadyProcess = function ( data ) {
 	data = data || {};
 	return MainWindow.super.prototype.getReadyProcess.call( this, data )
-		.next( () => this.searchBox.focus() );
+		.next( () => this.topBar.searchBox.focus() );
 };
 
 // Use the getActionProcess() method to do things when actions are clicked
@@ -469,10 +371,10 @@ MainWindow.prototype.setPreferences = function(prefs) {
 };
 
 MainWindow.prototype.onSearchSelect = function() {
-	this.searchBox.pushPending();
-	var name = this.searchBox.getValue().trim();
+	this.topBar.searchBox.pushPending();
+	var name = this.topBar.searchBox.getValue().trim();
 	if (!name) {
-		this.searchBox.popPending();
+		this.topBar.searchBox.popPending();
 		return;
 	}
 	var existingBanner = this.bannerList.items.find(banner => {
@@ -481,7 +383,7 @@ MainWindow.prototype.onSearchSelect = function() {
 	if (existingBanner) {
 		// TODO: show error message
 		console.log("There is already a {{" + name + "}} banner");
-		this.searchBox.popPending();
+		this.topBar.searchBox.popPending();
 		return;
 	}
 	if (!/^[Ww](?:P|iki[Pp]roject)/.test(name)) {
@@ -502,8 +404,8 @@ MainWindow.prototype.onSearchSelect = function() {
 		.then(banner => {
 			this.bannerList.addItems( [banner] );
 			this.updateSize();
-			this.searchBox.setValue("");
-			this.searchBox.popPending();
+			this.topBar.searchBox.setValue("");
+			this.topBar.searchBox.popPending();
 		});
 };
 

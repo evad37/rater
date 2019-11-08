@@ -188,6 +188,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 			this.actions.setMode("edit");
 			this.setPreferences(data.preferences);
 			this.prefsForm.setPrefValues(data.preferences);
+			this.bannerList.oresClass = data.ores && data.ores.prediction;
 			// Set up window based on data
 			this.bannerList.addItems(
 				data.banners.map( bannerTemplate => new BannerWidget(

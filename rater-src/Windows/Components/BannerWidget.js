@@ -1,5 +1,6 @@
 import ParameterListWidget from "./ParameterListWidget";
 import ParameterWidget from "./ParameterWidget";
+import DropdownParameterWidget from "./DropdownParameterWidget";
 import SuggestionLookupTextInputWidget from "./SuggestionLookupTextInputWidget";
 import { filterAndMap, classMask, importanceMask } from "../../util";
 import {Template, getWithRedirectTo} from "../../Template";
@@ -73,7 +74,7 @@ function BannerWidget( template, config ) {
 
 	// Rating dropdowns
 	if (this.hasClassRatings) {
-		this.classDropdown = new OO.ui.DropdownWidget( {
+		this.classDropdown = new DropdownParameterWidget( {
 			label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Class</span>"),
 			menu: {
 				items: [
@@ -89,7 +90,6 @@ function BannerWidget( template, config ) {
 					)
 				],
 			},
-			$element: $("<span style='display:inline-block;width:24%'>"),
 			$overlay: this.$overlay,
 		} );
 		var classParam = template.parameters.find(parameter => parameter.name === "class");
@@ -97,7 +97,7 @@ function BannerWidget( template, config ) {
 	}
 
 	if (this.hasImportanceRatings) {
-		this.importanceDropdown = new OO.ui.DropdownWidget( {
+		this.importanceDropdown = new DropdownParameterWidget( {
 			label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Importance</span>"),
 			menu: {
 				items: [
@@ -112,7 +112,6 @@ function BannerWidget( template, config ) {
 					)
 				]
 			},
-			$element: $("<span style='display:inline-block;width:24%'>"),
 			$overlay: this.$overlay,
 		} );
 		var importanceParam = template.parameters.find(parameter => parameter.name === "importance");
@@ -223,10 +222,10 @@ function BannerWidget( template, config ) {
 	/* --- EVENT HANDLING --- */
 
 	if (this.hasClassRatings) {
-		this.classDropdown.connect( this, {"labelChange": "onClassChange" } );
+		this.classDropdown.connect( this, {"change": "onClassChange" } );
 	}
 	if (this.hasImportanceRatings) {
-		this.importanceDropdown.connect( this, {"labelChange": "onImportanceChange" } );
+		this.importanceDropdown.connect( this, {"change": "onImportanceChange" } );
 	}
 	this.parameterList.connect( this, {
 		"change": "onParameterChange",

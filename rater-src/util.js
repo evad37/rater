@@ -70,7 +70,7 @@ var filterAndMap = function(array, filterPredicate, mapTransform) {
 /**
  * 
  * @param {string[]|number[]} array 
- * @returns {string} item with the highest frequency
+ * @returns {string|null} item with the highest frequency
  * e.g. `mostFrequent(["apple", "apple", "orange"])` returns `"apple"`
  */
 function mostFrequent(array) {
@@ -85,6 +85,26 @@ function mostFrequent(array) {
 		}
 	});
 	return mostFreq;
+}
+
+/**
+ * 
+ * @param {string[]|number[]} array 
+ * @returns {string[]|number[]} array with only unique values
+ * e.g. `uniqueArray(["apple", "apple", "orange"])` returns `["apple", "orange"]`
+ */
+function uniqueArray(array) {
+	if (!array || !Array.isArray(array) || array.length === 0)
+		return [];
+	var seen = {};
+	var unique = [];
+	array.forEach((item) => {
+		if (!seen[item]) {
+			unique.push(item);
+			seen[item] = true;
+		}
+	});
+	return unique;
 }
 
 function classMask(classVal) {
@@ -165,6 +185,7 @@ export {
 	filterAndMap,
 	normaliseYesNo,
 	mostFrequent,
+	uniqueArray,
 	classMask,
 	importanceMask
 };

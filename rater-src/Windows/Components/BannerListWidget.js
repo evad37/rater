@@ -1,6 +1,6 @@
 import config from "../../config";
 import BannerWidget from "./BannerWidget";
-import { normaliseYesNo, filterAndMap } from "../../util";
+import { normaliseYesNo, filterAndMap, uniqueArray } from "../../util";
 import ParameterWidget from "./ParameterWidget";
 
 var BannerListWidget = function BannerListWidget( config ) {
@@ -15,6 +15,8 @@ var BannerListWidget = function BannerListWidget( config ) {
 
 	// Prefs
 	this.preferences = config.preferences;
+	
+	this.oresClass = config.oresClass;
 
 	// Events
 	this.aggregate( {"remove": "bannerRemove"} );
@@ -112,15 +114,86 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 			});
 	}
 
+	// Autofill ratings (if able to, and if enabled in preferences)
+	this.autofillClassRatings();
+	this.autofillImportanceRatings();
+
 	// emit updatedSize event 
 	this.onUpdatedSize();
 
 	return this;
 };
 
+BannerListWidget.prototype.autofillClassRatings = function() {
+	// Only autofill if set in preferences
+	if (!this.preferences.autofillClassFromOthers && !this.preferences.autofillClassFromOres) {
+		return;
+	}
+	// Check what banners already have
+	const uniqueClassRatings = uniqueArray( filterAndMap(
+		this.items,
+		banner => {
+			if (banner.isShellTemplate || !banner.hasClassRatings) {
+				return false;
+			}
+			const classItem = banner.classDropdown.getMenu().findSelectedItem();
+			return classItem && classItem.getData();
+		},
+		banner => banner.classDropdown.getMenu().findSelectedItem().getData()
+	));
+	// Can't autofill if there isn't either a single value, or no value
+	if (uniqueClassRatings.length > 1) {
+		return;
+	}
+	// Determine what to autofill with
+	let autoClass;
+	if (uniqueClassRatings.length === 1 && this.preferences.autofillClassFromOthers) {
+		autoClass = uniqueClassRatings[0];
+	} else if (uniqueClassRatings.length === 0 && this.preferences.autofillClassFromOres && this.oresClass) {
+		autoClass = this.oresClass;
+	} else {
+		// nothing to do
+		return;
+	}
+	// Do the autofilling
+	this.items.forEach(banner => {
+		if (!banner.hasClassRatings) {
+			return;
+		}
+		const classItem = banner.classDropdown.getMenu().findSelectedItem();
+		if (classItem && classItem.getData()) {
+			return;
+		}
+		banner.classDropdown.getMenu().selectItemByData(autoClass);
+		banner.classDropdown.setAutofilled(true);
+	});
+};
+
+BannerListWidget.prototype.autofillImportanceRatings = function() {
+	if (!this.preferences.autofillImportance) {
+		return;
+	}
+	// TODO: Should try to find a smarter, banner-specific way of determining importance.
+	// Maybe do something with  ORES's "drafttopic" model.
+	const autoImportance = "Low";
+	this.items.forEach(banner => {
+		if (!banner.hasImportanceRatings) {
+			return;
+		}
+		const importanceItem = banner.importanceDropdown.getMenu().findSelectedItem();
+		if (importanceItem && importanceItem.getData()) {
+			return;
+		}
+		banner.importanceDropdown.getMenu().selectItemByData(autoImportance);
+		banner.importanceDropdown.setAutofilled(true);
+	});
+};
+
 BannerListWidget.prototype.setPreferences = function(prefs) {
 	this.preferences = prefs;
 	this.items.forEach(banner => banner.setPreferences(prefs));
+	this.autofillClassRatings();
+	this.autofillImportanceRatings();
 };
 
 BannerListWidget.prototype.makeWikitext = function() {

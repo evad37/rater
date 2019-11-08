@@ -228,8 +228,11 @@ function BannerWidget( template, config ) {
 	if (this.hasImportanceRatings) {
 		this.importanceDropdown.connect( this, {"labelChange": "onImportanceChange" } );
 	}
-	this.parameterList.connect( this, { "change": "onParameterChange" } );
-	this.parameterList.connect( this, { "addParametersButtonClick": "showAddParameterInputs" } );
+	this.parameterList.connect( this, {
+		"change": "onParameterChange",
+		"addParametersButtonClick": "showAddParameterInputs",
+		"updatedSize": "onUpdatedSize"
+	} );
 	this.addParameterButton.connect(this, { "click": "onParameterAdd" });
 	this.addParameterNameInput.connect(this, {
 		"change": "onAddParameterNameChange",
@@ -274,6 +277,11 @@ BannerWidget.newFromTemplateName = function(templateName, config) {
 		.then(template => new BannerWidget(template, config));
 };
 
+BannerWidget.prototype.onUpdatedSize = function() {
+	// Emit an "updatedSize" event so the parent window can update size, if needed
+	this.emit("updatedSize");
+};
+
 BannerWidget.prototype.onParameterChange = function() {
 	this.changed = true;
 	if (this.mainText === "WikiProject Biography" || this.redirectTargetMainText === "WikiProject Biography") {
@@ -302,6 +310,7 @@ BannerWidget.prototype.onImportanceChange = function() {
 
 BannerWidget.prototype.showAddParameterInputs = function() {
 	this.addParameterLayout.toggle(true);
+	this.onUpdatedSize();
 };
 
 BannerWidget.prototype.getAddParametersInfo = function(nameInputVal, valueInputVal) {

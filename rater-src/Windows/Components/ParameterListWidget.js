@@ -49,6 +49,8 @@ var ParameterListWidget = function ParameterListWidget( config ) {
 	});
 	this.addItems([this.addParametersButton]);
 
+	/* --- Events --- */
+
 	// Handle delete events from ParameterWidgets
 	this.aggregate( { delete: "parameterDelete"	} );
 	this.connect( this, { parameterDelete: "onParameterDelete" } );
@@ -56,6 +58,10 @@ var ParameterListWidget = function ParameterListWidget( config ) {
 	// Handle change events from ParameterWidgets
 	this.aggregate( { change: "parameterChange"	} );
 	this.connect( this, { parameterChange: "onParameterChange" } );
+
+	// Handle updatedSize events from ParameterWidgets
+	this.aggregate( {"updatedSize": "parameterUpdatedSize"} );
+	this.connect( this, {"parameterUpdatedSize": "onUpdatedSize"} );
     
 	// Handle button clicks
 	if (this.showMoreParametersButton ) {
@@ -75,6 +81,25 @@ methods from mixin:
  - removeItems( items ) : OO.ui.Element  (CHAINABLE)
 */
 
+ParameterListWidget.prototype.onUpdatedSize = function() {
+	// Emit an "updatedSize" event so the parent window can update size, if needed
+	this.emit("updatedSize");
+};
+
+ParameterListWidget.prototype.addItems = function ( items, index ) {
+	if ( items.length === 0 ) {
+		return this;
+	}
+
+	// Call mixin method to do the adding
+	OO.ui.mixin.GroupElement.prototype.addItems.call( this, items, index );
+
+	// emit updatedSize event 
+	this.onUpdatedSize();
+
+	return this;
+};	
+
 ParameterListWidget.prototype.onParameterDelete = function(parameter) {
 	this.removeItems([parameter]);
 	this.emit("change");
@@ -91,6 +116,7 @@ ParameterListWidget.prototype.getParameterItems = function() {
 ParameterListWidget.prototype.onShowMoreParametersButtonClick = function() {
 	this.removeItems([this.showMoreParametersButton]);
 	this.items.forEach(parameterWidget => parameterWidget.toggle(true));
+	this.onUpdatedSize();
 };
 
 ParameterListWidget.prototype.onAddParametersButtonClick = function() {

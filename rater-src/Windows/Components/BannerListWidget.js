@@ -22,6 +22,9 @@ var BannerListWidget = function BannerListWidget( config ) {
 
 	this.aggregate( {"biographyBannerChange": "biographyBannerChanged"} );
 	this.connect( this, {"biographyBannerChanged": "syncShellTemplateWithBiographyBanner"} );
+
+	this.aggregate( {"updatedSize": "bannerUpdatedSize"} );
+	this.connect( this, {"bannerUpdatedSize": "onUpdatedSize"} );
 };
 
 OO.inheritClass( BannerListWidget, OO.ui.Widget );
@@ -34,6 +37,11 @@ methods from mixin:
  - findItemsFromData( data ) : OO.ui.Element[]
  - removeItems( items ) : OO.ui.Element  (CHAINABLE)
 */
+
+BannerListWidget.prototype.onUpdatedSize = function() {
+	// Emit an "updatedSize" event so the parent window can update size, if needed
+	this.emit("updatedSize");
+};
 
 BannerListWidget.prototype.onBannerRemove = function ( banner ) {
 	this.removeItems([banner]);
@@ -99,8 +107,14 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 				if (biographyBanner) {
 					this.syncShellTemplateWithBiographyBanner(biographyBanner);
 				}
+				// emit updatedSize event 
+				this.onUpdatedSize();
 			});
 	}
+
+	// emit updatedSize event 
+	this.onUpdatedSize();
+
 	return this;
 };
 

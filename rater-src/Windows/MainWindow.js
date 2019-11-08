@@ -168,6 +168,7 @@ MainWindow.prototype.initialize = function () {
 	/* --- EVENT HANDLING --- */
 
 	this.topBar.connect(this, {"searchSelect": "onSearchSelect"});
+	this.bannerList.connect(this, {"updatedSize": "updateSize"});
 };
 
 // Override the getBodyHeight() method to specify a custom height
@@ -357,7 +358,7 @@ MainWindow.prototype.getTeardownProcess = function ( data ) {
 	return MainWindow.super.prototype.getTeardownProcess.call( this, data )
 		.first( () => {
 			this.bannerList.clearItems();
-			this.searchBox.setValue("");
+			this.topBar.searchBox.setValue("");
 			this.contentArea.setItem( this.editLayout );
 			this.topBar.setDisabled(false);
 			this.oresLabel.toggle(false).$element.find(".oresPrediction").empty();

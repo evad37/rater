@@ -147,7 +147,7 @@ function ParameterWidget( parameter, paramData, config ) {
 		title: "Autofilled by Rater",
 		flags: "progressive",
 		$element: $("<span style='margin: 0 -5px 0 5px;min-width: 16px;width: 16px;'>")
-	} );
+	} ).toggle(this.autofilled);
 	this.editButton = new OO.ui.ButtonWidget({
 		icon: "edit",
 		framed: false,
@@ -166,15 +166,13 @@ function ParameterWidget( parameter, paramData, config ) {
 		items: [
 			this.invalidIcon,
 			this.fullLabel,
+			this.autofilledIcon,
 			this.editButton
 		],
 		$element: $("<span style='margin:0;width:unset;'>")
 	});
 	if (this.checkbox) {
 		this.readLayout.addItems([this.checkbox], 2);
-	}
-	if (this.autofilled) {
-		this.readLayout.addItems([this.autofilledIcon], 2);
 	}
 
 	/* --- CONTAINER FOR BOTH LAYOUTS --- */
@@ -200,11 +198,17 @@ function ParameterWidget( parameter, paramData, config ) {
 }
 OO.inheritClass( ParameterWidget, OO.ui.Widget );
 
+ParameterWidget.prototype.onUpdatedSize = function() {
+	// Emit an "updatedSize" event so the parent window can update size, if needed
+	this.emit("updatedSize");
+};
+
 ParameterWidget.prototype.onEditClick = function() {
 	this.readLayout.toggle(false);
 	this.editLayout.toggle(true);
 	this.$element.css({"background": "#fffe"});
 	this.input.focus();
+	this.onUpdatedSize();
 };
 
 ParameterWidget.prototype.onConfirmClick = function() {
@@ -213,12 +217,14 @@ ParameterWidget.prototype.onConfirmClick = function() {
 	);
 	this.readLayout.toggle(true);
 	this.editLayout.toggle(false);
+	this.onUpdatedSize();
 };
 
 ParameterWidget.prototype.onCancelClick = function() {
 	this.input.setValue(this.value);
 	this.readLayout.toggle(true);
 	this.editLayout.toggle(false);
+	this.onUpdatedSize();
 };
 
 ParameterWidget.prototype.onDeleteClick = function() {
@@ -285,12 +291,8 @@ ParameterWidget.prototype.setValue = function(val) {
 };
 
 ParameterWidget.prototype.setAutofilled = function() {
-	if (this.autofilled) {
-		return;
-	}
 	this.autofilled = true;
 	this.autofilledIcon.toggle(true);
-	this.readLayout.addItems([this.autofilledIcon], 2);
 	this.$element.css({"border": "1px dashed #36c"});
 };
 

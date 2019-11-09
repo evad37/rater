@@ -1,6 +1,6 @@
 # Rater
 This is the source code for version 2 of the Wikipedia userscript [Rater](https://en.wikipedia.org/wiki/User:Evad37/rater).
-**This is currently *alpha software*. It  not fully functional (and perhaps not even mostly functional)**
+**This is currently *beta software*. It should be used with caution, to ensure results are as expected**
 
 ## Installation instructions and user guide
 - Version 1: See [https://en.wikipedia.org/wiki/User:Evad37/rater](https://en.wikipedia.org/wiki/User:Evad37/rater).

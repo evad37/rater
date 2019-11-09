@@ -6,6 +6,7 @@ import PrefsFormWidget from "./Components/PrefsFormWidget";
 import { setPrefs as ApiSetPrefs } from "../prefs";
 import { parseTemplates } from "../Template";
 import TopBarWidget from "./Components/TopBarWidget";
+import { filterAndMap, uniqueArray } from "../util";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -261,23 +262,32 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 		this.updateSize();
 
 	} else if ( action === "save" ) {
-		var bannersWikitext = this.bannerList.makeWikitext();
-		
-		console.log("[Rater] Save clicked!");
-		console.log(bannersWikitext);
-
-		var dialog = this;   
-		return new OO.ui.Process( function () {
-			// Do something about the edit.
-			dialog.close();
-		} );
+		return new OO.ui.Process().next(
+			API.editWithRetry(
+				this.talkpage.getPrefixedText(),
+				{rvsection: 0},
+				revision => ({
+					section: 0,
+					text: this.transformTalkWikitext(revision.content),
+					summary: this.makeEditSummary(),
+					watchlist: this.preferences.watchlist
+				})
+			).catch((code, err) => $.Deferred().reject(
+				new OO.ui.Error(
+					$("<div>").append(
+						$("<strong style='display:block;'>").text("Could not save your changes."),
+						$("<span style='color:#777'>").text( makeErrorMsg(code, err) )
+					)
+				)
+			) )
+		).next( () => this.close() );
 
 	} else if ( action === "preview" ) {
 		return new OO.ui.Process().next(
 			API.post({
 				action: "parse",
 				contentmodel: "wikitext",
-				text: this.transformTalkWikitext(this.talkWikitext),
+				text: this.transformTalkWikitext(this.talkWikitext) + "\n<hr>\n" + "'''Edit summary:''' " + this.makeEditSummary(),
 				title: this.talkpage.getPrefixedText(),
 				pst: 1
 			}).then( result => {
@@ -323,7 +333,15 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 							$("<th>").attr({"colspan":"2", "scope":"col"}).css("width", "50%").text("Latest revision"),
 							$("<th>").attr({"colspan":"2", "scope":"col"}).css("width", "50%").text("New text")
 						),
-						result.compare["*"]
+						result.compare["*"],
+						$("<tfoot>").append(
+							$("<tr>").append(
+								$("<td colspan='4'>").append(
+									$("<strong>").text("Edit summary: "),
+									this.makeEditSummary()
+								)
+							)
+						)
 					);
 
 					this.parsedContentWidget.setLabel($diff);
@@ -450,6 +468,73 @@ MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {
 		// Everything is a template, so insert at the end
 		return talkWikitext.trim() + "\n" + bannersWikitext.trim();
 	}
+};
+
+MainWindow.prototype.makeEditSummary = function() {
+	const removedBanners = [];
+	const editedBanners = [];
+	const newBanners = [];
+	const shortName = name => name.replace("WikiProject ","").replace("Subst:","");
+
+	// Overall class/importance, if all the same
+	const allClasses = uniqueArray(
+		filterAndMap(this.bannerList.items,
+			banner => banner.hasClassRatings,
+			banner => banner.classDropdown.getValue()
+		)
+	);
+	let overallClass = allClasses.length === 1 && allClasses[0];
+	const allImportances = uniqueArray(
+		filterAndMap(this.bannerList.items,
+			banner => banner.hasImportanceRatings,
+			banner => banner.importanceDropdown.getValue()
+		)
+	);
+	let overallImportance = allImportances.length === 1 && allImportances[0];
+	// Don't use them unless some have changed
+	let someClassesChanged = false;
+	let someImportancesChanged = false;
+
+	// removed banners:
+	this.existingBannerNames.forEach(name => {
+		const banner = this.bannerList.items.find( banner => banner.name === name || banner.bypassedName === name );
+		if (!banner) {
+			removedBanners.push("−" + shortName(name));
+		}
+	});
+	// edited & new banners
+	this.bannerList.items.forEach( banner => {
+		const isNew = !banner.wikitext; // not added from wikitext on page
+		if (!isNew && !banner.changed) {
+			// Not changed
+			return;
+		}
+		let newClass = banner.hasClassRatings &&  (isNew || banner.classChanged) && banner.classDropdown.getValue();
+		if (newClass) { someClassesChanged = true; }
+		if (overallClass) { newClass = null; }
+
+		let newImportance = banner.hasImportanceRatings && (isNew || banner.importanceChanged) && banner.importanceDropdown.getValue();
+		if (newImportance) { someImportancesChanged = true; }
+		if (overallImportance) { newImportance = null; }
+
+		let rating = (newClass && newImportance)
+			? newClass + "/" + newImportance
+			: newClass || newImportance || "";
+		if (rating) { rating = " (" + rating + ")"; }
+		
+		if (isNew) {
+			newBanners.push("+" + shortName(banner.name) + rating);
+		} else {
+			editedBanners.push(shortName(banner.name) + rating);
+		}
+	});
+	// overall rating
+	let overallRating = (someClassesChanged && overallClass && someImportancesChanged && overallImportance)
+		? overallClass + "/" + overallImportance
+		: (someClassesChanged && overallClass) || (someImportancesChanged && overallImportance) || "";
+	if (overallRating) { overallRating = " (" + overallRating + ")"; }
+
+	return `Assessment${overallRating}: ${[...editedBanners, ...newBanners, ...removedBanners].join(", ")}${appConfig.script.advert}`;
 };
 
 export default MainWindow;

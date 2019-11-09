@@ -62,26 +62,13 @@ const getPrefs = () => getPrefsFromCache().then(
  * @param {Object} updatedPrefs object with key:value pairs for preferences json.
  */
 const setPrefs = function(updatedPrefs) {
-	const text = JSON.stringify(updatedPrefs);
-	const summary = "Saving Rater preferences " + config.script.advert;
-	return API.editWithRetry(
-		prefsPage,
+	return API.editWithRetry(prefsPage,	null,
 		() => ({
-			"text": text,
-			"summary": summary
+			"text": JSON.stringify(updatedPrefs),
+			"summary": "Saving Rater preferences " + config.script.advert
 		})
 	)
-		.then( () => writePrefsToCache(updatedPrefs) )
-		.catch((code, error) => {
-			if (code === "nocreate-missing") {
-				return API.create(
-					prefsPage,
-					{ "summary": summary },
-					text
-				);
-			}
-			return $.Deferred().reject(code, error);
-		});
+		.then( () => writePrefsToCache(updatedPrefs) );
 };
 
 export default ({get: getPrefs, set: setPrefs});

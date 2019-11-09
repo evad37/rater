@@ -8,10 +8,12 @@ var API = new mw.Api( {
 		}
 	}
 } );
+
 /* ---------- API for ORES ---------------------------------------------------------------------- */
 API.getORES = function(revisionID) {
 	return $.get("https://ores.wikimedia.org/v3/scores/enwiki?models=articlequality&revids="+revisionID);
 };
+
 /* ---------- Raw wikitext ---------------------------------------------------------------------- */
 API.getRaw = function(page) {
 	return $.get("https:" + config.mw.wgServer + mw.util.getUrl(page, {action:"raw"}))
@@ -22,21 +24,103 @@ API.getRaw = function(page) {
 			return data;
 		});
 };
+
+/* ---------- Edit with retry ------------------------------------------------------------------- */
 /**
  * @param {String} title
- * @param {Function} transform (revision) => {Object|Promise<Object>} params for API editing
+ * @param {Object?} params additional params for the get request
+ * @returns {Promise<Object, string>} page, starttime timestamp
  */
-API.editWithRetry = function(title, transform) {
-	var doEdit = function(title, transform, isRetry) {
-		return API.edit(title, transform)
-			.catch((code, error) => {
-				if (!isRetry || code==="editconflict") {
-					return doEdit(title, transform, true);
-				}
-				return $.Deferred().reject(code, error);
-			});
+var getPage = function(title, params) {
+	return API.get(
+		$.extend(
+			{
+				"action": "query",
+				"format": "json",
+				"curtimestamp": 1,
+				"titles": title,
+				"prop": "revisions|info",
+				"rvprop": "content|timestamp",
+				"rvslots": "main"					
+			},
+			params
+		)
+	).then(response => {
+		var page = Object.values(response.query.pages)[0];
+		var starttime = response.curtimestamp;
+		return $.Deferred().resolve(page, starttime);
+	});
+};
+
+/**
+ * @param {Object} page details object from API
+ * @param {string} starttime timestamp
+ * @param {Function} transform callback that prepares the edit:
+ *  {Object} simplifiedPage => {Object|Promise<Object>} edit params
+ * @returns {Promise<Object>} params for edit query
+ */
+var processPage = function(page, starttime, transform) {
+	var basetimestamp = page.revisions && page.revisions[0].timestamp;
+	var simplifiedPage = {
+		pageid: page.pageid,
+		missing: page.missing === "",
+		redirect: page.redirect === "",
+		categories: page.categories,
+		ns: page.ns,
+		title: page.title,
+		content: page.revisions && page.revisions[0].slots.main["*"]
 	};
-	return doEdit(title, transform);
+	return $.when( transform(simplifiedPage) )
+		.then( editParams =>
+			$.extend( {
+				action: "edit",
+				title: page.title,
+				// Protect against errors and conflicts
+				assert: "user",
+				basetimestamp: basetimestamp,
+				starttimestamp: starttime
+			}, editParams )
+		);
+};
+
+/** editWithRetry
+ * 
+ * Edits a page, resolving edit conflicts, and retrying edits that fail. The
+ * tranform function may return a rejected promise if the page should not be
+ * edited; the @returns {Promise} will will be rejected with the same rejection
+ * values.
+ * 
+ * Note: Unlike [mw.Api#Edit], a missing page will be created, unless the
+ * transform callback includes the "nocreate" param.
+ * 
+ * [mw.Api#Edit]: <https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api.plugin.edit>
+ * 
+ * @param {String} title page to be edited
+ * @param {Object|null} getParams additional params for the get request
+ * @param {Function} transform callback that prepares the edit:
+ *  {Object} simplifiedPage => {Object|Promise<Object>} params for API editing
+ * @returns {Promise<object>} promise, resolved on success, rejected if
+ *  page was not edited
+ */
+API.editWithRetry = function(title, getParams, transform) {
+	return getPage(title, getParams)
+		.then(
+		// Succes: process the page
+			(page, starttime) => processPage(page, starttime, transform),
+			// Failure: try again
+			() => getPage(title, getParams).then(processPage, transform)
+		)
+		.then(editParams =>
+			API.postWithToken("csrf", editParams)
+				.catch( errorCode => {
+					if ( errorCode === "editconflict" ) {
+						// Try again, starting over
+						return API.editWithRetry(title, getParams, transform);
+					}
+					// Try again
+					return API.postWithToken("csrf", editParams);
+				})
+		);
 };
 
 var makeErrorMsg = function(first, second) {

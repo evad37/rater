@@ -41,8 +41,14 @@ DropdownParameterWidget.prototype.onDropdownMenuChoose = function() {
 	this.setAutofilled(false);
 	this.emit("change");
 };
+
 DropdownParameterWidget.prototype.onDropdownMenuSelect = function() {
 	this.emit("change");
+};
+
+DropdownParameterWidget.prototype.getValue = function() {
+	const selectedItem = this.menu.findSelectedItem();
+	return selectedItem && selectedItem.getData();
 };
 
 export default DropdownParameterWidget;

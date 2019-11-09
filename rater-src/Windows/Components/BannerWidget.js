@@ -291,6 +291,7 @@ BannerWidget.prototype.onParameterChange = function() {
 
 BannerWidget.prototype.onClassChange = function() {
 	this.changed = true;
+	this.classChanged = true;
 	var classItem = this.classDropdown.getMenu().findSelectedItem();
 	if (classItem && classItem.getData() == null ) {
 		// clear selection
@@ -300,6 +301,7 @@ BannerWidget.prototype.onClassChange = function() {
 
 BannerWidget.prototype.onImportanceChange = function() {
 	this.changed = true;
+	this.importanceChanged = true;
 	var importanceItem = this.importanceDropdown.getMenu().findSelectedItem();
 	if (importanceItem && importanceItem.getData() == null ) {
 		// clear selection
@@ -409,6 +411,8 @@ BannerWidget.prototype.bypassRedirect = function() {
 	if (!this.redirectTargetMainText) {
 		return;
 	}
+	// Store the bypassed name
+	this.bypassedName = this.name;
 	// Update title label
 	this.mainLabelPopupButton.setLabel("{{" + this.redirectTargetMainText + "}}");
 	// Update properties

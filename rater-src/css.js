@@ -1,5 +1,5 @@
 // Attribution: Diff styles from <https://en.wikipedia.org/wiki/Wikipedia:AutoWikiBrowser/style.css>
-var diffStyles = `table.diff, td.diff-otitle, td.diff-ntitle { background-color: white; }
+const styles = `table.diff, td.diff-otitle, td.diff-ntitle { background-color: white; }
 td.diff-otitle, td.diff-ntitle { text-align: center; }
 td.diff-marker { text-align: right; font-weight: bold; font-size: 1.25em; }
 td.diff-lineno { font-weight: bold; }
@@ -26,6 +26,12 @@ table.diff td div {
     /* As fallback (FF<3.5, Opera <10.5), scrollbars will be added for very wide cells
         instead of text overflowing or widening */
     overflow: auto;
+}` +
+
+// Override OOUI window manager preventing background scrolling
+`html body.rater-mainWindow-open {
+	position: unset;
+	overflow: unset;
 }`;
 
-export { diffStyles };
+export default styles;

@@ -1,20 +1,26 @@
 import setupRater from "./setup";
 import autoStart from "./autostart";
-import { diffStyles } from "./css.js";
+import styles from "./css.js";
 import { makeErrorMsg } from "./api";
 import windowManager from "./windowManager";
 
 (function App() {
 	// <nowiki>
 
-	mw.util.addCSS(diffStyles);
+	mw.util.addCSS(styles);
 
 	const showMainWindow = data => {
 		if (!data || !data.success) {
 			return;
 		}
-
-		windowManager.openWindow("main", data);
+		// Add css class to body to enable background scrolling
+		document.getElementsByTagName("body")[0].classList.add("rater-mainWindow-open");
+		// Open the window
+		windowManager.openWindow("main", data)
+			.closed.then( () =>
+			// Remove the css class, so as to not interfere with other OOUI windows
+				document.getElementsByTagName("body")[0].classList.remove("rater-mainWindow-open")
+			);
 	};
 
 	const showSetupError = (code, jqxhr) => OO.ui.alert(

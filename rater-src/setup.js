@@ -11,6 +11,13 @@ var setupRater = function(clickEvent) {
 		clickEvent.preventDefault();
 	}
 
+	// Get the interactjs script now, if not already loaded
+	var interactjsPromise = window.interact 
+		? $.Deferred().resolve(true)
+		: mw.loader.getScript(
+			"https://en.wikipedia.org/w/index.php?title=User:Evad37/rater/lib/interact.js&action=raw&ctype=text/javascript"
+		);
+
 	var setupCompletedPromise = $.Deferred();
     
 	var currentPage = mw.Title.newFromText(config.mw.wgPageName);
@@ -168,7 +175,8 @@ var setupRater = function(clickEvent) {
 				talkpage: talkPage,
 				talkWikitext: talkWikitext,
 				banners: banners,
-				preferences: preferences
+				preferences: preferences,
+				interactScriptLoaded: interactjsPromise
 			};
 			if (redirectTarget) {
 				result.redirectTarget = redirectTarget;

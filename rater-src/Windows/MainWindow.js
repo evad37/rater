@@ -178,6 +178,40 @@ MainWindow.prototype.initialize = function () {
 	this.bannerList.connect(this, {"updatedSize": "updateSize"});
 };
 
+MainWindow.prototype.makeDraggable = function() {
+	let position = { x: 0, y: 0 };
+	const constrain = function(val, minVal, maxVal) {
+		if (val < minVal) return minVal;
+		if (val > maxVal) return maxVal;
+		return val;
+	};
+	let $frameEl = this.$element.find(".oo-ui-window-frame");
+	const constrainX = (val) => {
+		// Don't go more than halfway off the viewport horizontally
+		let limit = window.visualViewport.width/2;
+		return constrain(val, -1*limit, limit);
+	};
+	const constrainY = (val) => {
+		// Can't take title bar off the viewport, since it's the drag handle
+		let minLimit = -1*(window.visualViewport.height - $frameEl.outerHeight())/2;
+		// Don't go more than halfway down off the viewport vertically
+		let maxLimit = window.visualViewport.height/2;
+		return constrain(val, minLimit, maxLimit);
+	};
+	//transition: all 0.3s cubic-bezier(0, 0.07, 0.68, 0.99) 0s
+	this.$head.find(".oo-ui-processDialog-location").css({"cursor":"move"});
+	window.interact( ".oo-ui-window-frame" ).draggable({
+		allowFrom: ".oo-ui-processDialog-location", // handle to drag from (dialog's title bar)
+		listeners: {
+			move (event) {
+				position.x = constrainX(position.x + event.dx);
+				position.y = constrainY(position.y + event.dy);
+				event.target.style.transform = `translate(${position.x}px, ${position.y}px)`;
+			},
+		}
+	});
+};
+
 // Override the getBodyHeight() method to specify a custom height
 MainWindow.prototype.getBodyHeight = function () {
 	var currentlayout = this.contentArea.getCurrentItem();
@@ -192,11 +226,14 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 	data = data || {};
 	return MainWindow.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
-			this.actions.setMode("edit");
+			// Set up dragability
+			data.interactScriptLoaded.then( () => this.makeDraggable() );
+			// Set up preferences
 			this.setPreferences(data.preferences);
 			this.prefsForm.setPrefValues(data.preferences);
+			// Set up edit mode banners
+			this.actions.setMode("edit");
 			this.bannerList.oresClass = data.ores && data.ores.prediction;
-			// Set up window based on data
 			this.bannerList.addItems(
 				data.banners.map( bannerTemplate => new BannerWidget(
 					bannerTemplate,
@@ -204,6 +241,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 						$overlay: this.$overlay }
 				) )
 			);
+			// Show ORES prediction, if available
 			if (data.ores) {
 				this.oresClass = data.ores.prediction;
 				this.oresLabel.toggle(true).$element.find(".oresPrediction").append(
@@ -211,10 +249,11 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 					"&nbsp;(" + data.ores.probability + ")"
 				);
 			}
-
+			// Set props for use in making wikitext and edit summaries
 			this.talkWikitext = data.talkWikitext;
 			this.existingBannerNames = data.banners.map( bannerTemplate => bannerTemplate.name );
 			this.talkpage = data.talkpage;
+			// Force a size update to ensure eveything fits okay
 			this.updateSize();
 		}, this );
 };

@@ -15,6 +15,9 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 - The source code is bundled, transpiled, and minified using `npm run build`. This writes two files to the `dist\` directory:
    - `dist\rater.js` contains bundled and transpiled code, with a source map. It is published to [User:Evad37/rater/sandbox/app.js](https://en.wikipedia.org/wiki/User:Evad37/rater/sandbox/app.js), for testing/debugging purposes.
    - `dist\rater.min.js` is the minified version.  It is published to [User:Evad37/rater/app.js](https://en.wikipedia.org/wiki/User:Evad37/rater/app.js)  (the *live version* of the userscript), once the sandbox version has been adequately tested. Or [User:Evad37/rater/beta/app.js](https://en.wikipedia.org/wiki/User:Evad37/rater/beta/app.js) for beta testing.
+- External scripts (other than those provided by MediaWiki) are located in the `lib\` folder, and deployed to subpages of [User:Evad37/rater/lib/](https://en.wikipedia.org/wiki/Special:PrefixIndex?prefix=User%3AEvad37%2Frater%2Flib%2F).
+   - This allows the bundled source code size to be smaller, and easier to work with. The scripts can be loaded with `mw.loader.getScript`, which returns a promise that resolves when the script is loaded.
+   - These files must have licencing which, to be compatible with English Wikipedia (CC-BY-SA-3.0/GFDL), is permissive with regards to distribution, modification, and sublicencing. E.g. Apache, BSD, MIT licences are okay; GNU licences are not okay. See [comparison table](https://en.wikipedia.org/wiki/Comparison_of_free_and_open-source_software_licenses).
 ### Tooling
 - **eslint** for ES6 linting
 - **jshint** for ES5 linting ([ESLint doesn't support override for ecmaVersion](https://github.com/sindresorhus/eslint-config-xo/issues/16#issuecomment-190302577))
@@ -22,8 +25,6 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 - **uglifyjs** for minifying
 
 ## TODO
- - [ ] Finish writing app (min viable product - same or better functionality than v1)
-    - [ ] Make background scrollable and limit max height of window
  - Possible future features:
     - [ ] Have a preference for portlet location
     - [ ] Have a preference to autostart for particular talkpage categories
@@ -36,6 +37,6 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 - [ ] Improve documentation
 - [ ] ... probably other things too - finish off this list, and/or put issues on the github page.
 ### Roadmap
-- [ ] Complete the v2 rewrite
+- [X] Complete the v2 rewrite
 - [ ] Get beta testers to try out the new version. Fix/adjust things as they get reported.
 - [ ] Release the new version generally.

@@ -1,6 +1,6 @@
 # Rater
 This is the source code for version 2 of the Wikipedia userscript [Rater](https://en.wikipedia.org/wiki/User:Evad37/rater).
-**This is currently *pre-alpha software*. It is not fully functional (and perhaps not even mostly functional)**
+**This is currently *alpha software*. It  not fully functional (and perhaps not even mostly functional)**
 
 ## Installation instructions and user guide
 - Version 1: See [https://en.wikipedia.org/wiki/User:Evad37/rater](https://en.wikipedia.org/wiki/User:Evad37/rater).
@@ -23,38 +23,12 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 
 ## TODO
  - [ ] Finish writing app (min viable product - same or better functionality than v1)
-    - [x] **MUST** Autofill listas parameter for biography banner
-    - [x] **MUST** have access keys for save, show preview, show changes
-    - [x] **MUST** Visually indicate parameters with null values are invalid and will not be included in saved wikitext. These are:
-       - Autofilled required/suggested parameters that don't have an autovalue, or
-       - Parameters with a single allowed value that have been unchecked 
-    - [x] **MUST** Have modes/layouts for edit, prefs, diff, preview -- per second example of https://www.mediawiki.org/wiki/OOUI/Windows/Process_Dialogs#Action_sets 
-    - [x] **MUST** Actually use user prefrences:
-       - [x] autostart
-       - [x] autostartRedirects
-       - [x] autostartNamespaces
-       - [x] minForShell
-       - [x] bypassRedirects
-       - [x] autofillClassFromOthers
-       - [x] autofillClassFromOres
-       - [x] autofillImportance
-       - [x] collapseParamsLowerLimit
-       - [x] watchlist
-    - [x] **MUST** Have action to display preferences, and allow changing them
-    - [x] **MUST** Check if $overlays have been specified for widgets with popups
-    - [x] **MUST** Remove bypass redirect buttons; will be controlled by user preference
-    - [x] **MUST** Cleanup main window before closing (during teardown)
-    - [x] **MUST** Have a MainWindow method to transform current talkpage wikitext, for API editing, diffing, and parsing
-       - [x] Then make Show preview and Show changes actions functional (display an overlay dialog)
-       - [x] Then make Save action functional
-    - [x] **MUST** Display ores prediction somewhere
-    - [x] **MUST** Connect Enter key press events (in text inputs) to the appropriate action
-    - [x] *SHOULD* Connect menu selection events (in text inputs with lookup menus) to the appropriate action
-    - [ ] *SHOULD* Use labels from templatedata if available
-    - [ ] COULD Have a preference for portlet location
-    - [ ] COULD Have a preference to autostart for particular talkpage categories
-    - [ ] COULD Have a preference to autostart for subject-page categories that match a word/regex pattern
-    - [ ] **MUST** Make Delete all and Clear all buttons functional
+    - [ ] Make background scrollable and limit max height of window
+ - Possible future features:
+    - [ ] Have a preference for portlet location
+    - [ ] Have a preference to autostart for particular talkpage categories
+    - [ ] Have a preference to autostart for subject-page categories that match a word/regex pattern
+    - [ ] Allow order of banners to be adjusted
  - [ ] Investigate unit testing
     - Is node-based unit testing even possible, given the reliance on globals like `mw` and `OO`?
     - Look at how v1 is using QUnit unit testing. Maybe replicate or iterate on that.

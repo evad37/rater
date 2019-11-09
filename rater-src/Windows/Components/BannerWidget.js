@@ -305,7 +305,7 @@ BannerWidget.prototype.onImportanceChange = function() {
 	var importanceItem = this.importanceDropdown.getMenu().findSelectedItem();
 	if (importanceItem && importanceItem.getData() == null ) {
 		// clear selection
-		this.classDropdown.getMenu().selectItem();
+		this.importanceDropdown.getMenu().selectItem();
 	}
 };
 

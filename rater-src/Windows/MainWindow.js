@@ -168,7 +168,13 @@ MainWindow.prototype.initialize = function () {
 
 	/* --- EVENT HANDLING --- */
 
-	this.topBar.connect(this, {"searchSelect": "onSearchSelect"});
+	this.topBar.connect(this, {
+		"searchSelect": "onSearchSelect",
+		"setClasses": "onSetClasses",
+		"setImportances": "onSetImportances",
+		"removeAll": "onRemoveAll",
+		"clearAll": "onClearAll"
+	});
 	this.bannerList.connect(this, {"updatedSize": "updateSize"});
 };
 
@@ -430,6 +436,30 @@ MainWindow.prototype.onSearchSelect = function() {
 		}
 		)
 		.then( () => this.topBar.searchBox.setValue("").popPending() );
+};
+
+MainWindow.prototype.onSetClasses = function(classVal) {
+	this.bannerList.items.forEach(banner => {
+		if (banner.hasClassRatings) {
+			banner.classDropdown.getMenu().selectItemByData(classVal);
+		}
+	});
+};
+
+MainWindow.prototype.onSetImportances = function(importanceVal) {
+	this.bannerList.items.forEach(banner => {
+		if (banner.hasImportanceRatings) {
+			banner.importanceDropdown.getMenu().selectItemByData(importanceVal);
+		}
+	});
+};
+
+MainWindow.prototype.onRemoveAll = function() {
+	this.bannerList.clearItems();
+};
+
+MainWindow.prototype.onClearAll = function() {
+	this.bannerList.items.forEach( banner => banner.onClearButtonClick() );
 };
 
 MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {

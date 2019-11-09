@@ -47,16 +47,24 @@ function TopBarWidget( config ) {
 				new OO.ui.MenuSectionOptionWidget( {
 					label: "Classes"
 				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: {class: null},
+					label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">(no class)</span>")
+				} ),
 				...appConfig.bannerDefaults.classes.map(classname => new OO.ui.MenuOptionWidget( {
-					data: {class: classname.toLowerCase()},
+					data: {class: classname},
 					label: classname
 				} )
 				),
 				new OO.ui.MenuSectionOptionWidget( {
 					label: "Importances"
 				} ),
+				new OO.ui.MenuOptionWidget( {
+					data: {importance: null},
+					label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">(no importance)</span>")
+				} ),
 				...appConfig.bannerDefaults.importances.map(importance => new OO.ui.MenuOptionWidget( {
-					data: {importance: importance.toLowerCase()},
+					data: {importance: importance},
 					label: importance
 				} )
 				)
@@ -114,11 +122,32 @@ function TopBarWidget( config ) {
 		"choose": "onSearchSelect"
 	});
 	this.addBannerButton.connect(this, {"click": "onSearchSelect"});
+	this.setAllDropDown.getMenu().connect(this, {"choose": "onRatingChoose"});
+	this.removeAllButton.connect(this, {"click": "onRemoveAllClick"});
+	this.clearAllButton.connect(this, {"click": "onClearAllClick"});
 }
 OO.inheritClass( TopBarWidget, OO.ui.PanelLayout );
 
 TopBarWidget.prototype.onSearchSelect = function() {
 	this.emit("searchSelect");
+};
+
+TopBarWidget.prototype.onRatingChoose = function(item) {
+	const data = item.getData();
+	if (data.class || data.class===null) {
+		this.emit("setClasses", data.class);
+	}
+	if (data.importance || data.importance===null) {
+		this.emit("setImportances", data.importance);
+	}
+};
+
+TopBarWidget.prototype.onRemoveAllClick = function() {
+	this.emit("removeAll");
+};
+
+TopBarWidget.prototype.onClearAllClick = function() {
+	this.emit("clearAll");
 };
 
 TopBarWidget.prototype.setDisabled = function(disable) {

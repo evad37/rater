@@ -5,8 +5,6 @@
  This script is a loader that will load the actual script from User:Evad37/rater/sandbox/app.js 
  once Resource loader modules are loaded and the page DOM is ready.
  Source code is available at https://github.com/evad37/rater
-
- THIS IS A PRE-APLHA SANDBOX VERSION, NOT INTENDED TO BE FULLY (OR AT ALL) FUNCTIONAL
 ***************************************************************************************************/
 // <nowiki>
 $.when(

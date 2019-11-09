@@ -11,7 +11,7 @@
     "lint:fix": "eslint index.js \"rater-src/**\" --fix",
     "lint": "npm run lint:es6 && npm run lint:es5",
     "build:bundle": "browserify rater-src/App.js --debug -t babelify --outfile dist/rater.js",
-    "build:minify": "uglifyjs dist/rater.js --compress --output dist/rater.min.js",
+    "build:minify": "uglifyjs dist/rater.js --compress -b ascii_only=true,beautify=false --output dist/rater.min.js",
     "build": "npm run lint && npm run build:bundle && npm run build:minify"
   },
   "author": "",

@@ -32,7 +32,7 @@ var ParameterListWidget = function ParameterListWidget( config ) {
 		if (hiddenCount>0) {
 			// Add button to show the hidden params
 			this.showMoreParametersButton = new OO.ui.ButtonWidget({
-				label: "Show " + hiddenCount + " more " + (hiddenCount===1 ? "paramter" : "paramters"),
+				label: "Show " + hiddenCount + " more " + (hiddenCount===1 ? "parameter" : "parameters"),
 				framed: false,
 				$element: $("<span style='margin-bottom:0'>")
 			});
@@ -42,7 +42,7 @@ var ParameterListWidget = function ParameterListWidget( config ) {
 
 	// Add the button that allows user to add more parameters
 	this.addParametersButton = new OO.ui.ButtonWidget({
-		label: "Add paramter",
+		label: "Add parameter",
 		icon: "add",
 		framed: false,
 		$element: $("<span style='margin-bottom:0'>")

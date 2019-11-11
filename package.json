@@ -1,9 +1,9 @@
 {
   "name": "rater",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Wikipedia userscript that helps assess pages for WikiProjects",
   "homepage": "https://github.com/evad37/rater",
-  "main": "rater-src/index.js",
+  "browser": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint:es5": "jshint index.js",
@@ -14,7 +14,14 @@
     "build:minify": "uglifyjs dist/rater.js --compress -b ascii_only=true,beautify=false --output dist/rater.min.js",
     "build": "npm run lint && npm run build:bundle && npm run build:minify"
   },
-  "author": "",
+  "author": {
+    "name" : "Evad37",
+    "url" : "https://en.wikipedia.org/wiki/User:Evad37"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/evad37/rater.git"
+  },
   "license": "(MIT OR CC-BY-4.0)",
   "devDependencies": {
     "@babel/core": "^7.6.4",

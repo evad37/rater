@@ -35,7 +35,7 @@ MainWindow.static.actions = [
 		action: "showPrefs",
 		flags: "safe",
 		icon: "settings",
-		title: "help",
+		title: "Preferences",
 		modes: ["edit", "diff", "preview"] // available when current mode isn't "prefs"
 	},
 	// Others (bottom)

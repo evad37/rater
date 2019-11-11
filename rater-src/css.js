@@ -28,10 +28,15 @@ table.diff td div {
     overflow: auto;
 }` +
 
-// Override OOUI window manager preventing background scrolling
+// Override OOUI window manager preventing background scrolling/interaction
 `html body.rater-mainWindow-open {
 	position: unset;
 	overflow: unset;
-}`;
+}
+html body.rater-mainWindow-open .oo-ui-windowManager-modal > .oo-ui-dialog.oo-ui-window-active {
+    position: static;
+    padding: 0;
+}
+`;
 
 export default styles;

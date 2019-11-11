@@ -15,7 +15,7 @@ function DropdownParameterWidget( config ) {
 		icon: "robot",
 		title: "Autofilled by Rater",
 		flags: "progressive",
-		$element: $("<span style='margin: 0 -5px 0 5px;min-width: 16px;width: 16px;'>")
+		$element: $("<span style='margin: 0 -5px 0 5px;min-width: 16px;width: 16px;left:unset;'>")
 	} ).toggle(this.autofilled);
 	this.$element.find(".oo-ui-indicatorElement-indicator").before(
 		this.autofilledIcon.$element

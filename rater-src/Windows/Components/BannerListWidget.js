@@ -150,7 +150,11 @@ BannerListWidget.prototype.autofillClassRatings = function() {
 	if (uniqueClassRatings.length === 1 && this.preferences.autofillClassFromOthers) {
 		autoClass = uniqueClassRatings[0];
 	} else if (uniqueClassRatings.length === 0 && this.preferences.autofillClassFromOres && this.oresClass) {
-		autoClass = this.oresClass;
+		// Don't autofill above C-class
+		switch(this.oresClass) {
+		case "Stub": case "Start": case "C":
+			autoClass = this.oresClass;
+		}
 	} else {
 		// nothing to do
 		return;

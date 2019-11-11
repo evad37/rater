@@ -439,7 +439,7 @@ MainWindow.prototype.onSearchSelect = function() {
 	this.topBar.searchBox.pushPending();
 	var name = this.topBar.searchBox.getValue().trim();
 	if (!name) {
-		this.topBar.searchBox.popPending();
+		this.topBar.searchBox.popPending().focus();
 		return;
 	}
 	var existingBanner = this.bannerList.items.find(banner => {
@@ -449,7 +449,7 @@ MainWindow.prototype.onSearchSelect = function() {
 	// Abort and show alert if banner already exists
 	if (existingBanner) {
 		this.topBar.searchBox.popPending();
-		return OO.ui.alert("There is already a {{" + name + "}} banner");
+		return OO.ui.alert("There is already a {{" + name + "}} banner").then(this.searchBox.focus());
 	}
 
 	// Confirmation required for banners missing WikiProject from name, and for uncreated disambiguation talk pages
@@ -472,9 +472,8 @@ MainWindow.prototype.onSearchSelect = function() {
 					this.bannerList.addItems( [banner] );
 					this.updateSize();
 				});
-		}
-		)
-		.then( () => this.topBar.searchBox.setValue("").popPending() );
+		})
+		.then( () => this.topBar.searchBox.setValue("").focus().popPending() );
 };
 
 MainWindow.prototype.onSetClasses = function(classVal) {

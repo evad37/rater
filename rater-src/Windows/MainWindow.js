@@ -179,6 +179,8 @@ MainWindow.prototype.initialize = function () {
 };
 
 MainWindow.prototype.makeDraggable = function() {
+	// Position for css translate transformations, relative to initial position
+	// (which is centered on viewport when scrolled to top)
 	let position = { x: 0, y: 0 };
 	const constrain = function(val, minVal, maxVal) {
 		if (val < minVal) return minVal;
@@ -187,18 +189,17 @@ MainWindow.prototype.makeDraggable = function() {
 	};
 	let $frameEl = this.$element.find(".oo-ui-window-frame");
 	const constrainX = (val) => {
-		// Don't go more than halfway off the viewport horizontally
-		let limit = window.visualViewport.width/2;
+		// Don't too far horizontally (leave at least 100px visible)
+		let limit = window.visualViewport.width/2 + $frameEl.outerWidth()/2 - 100;
 		return constrain(val, -1*limit, limit);
 	};
 	const constrainY = (val) => {
 		// Can't take title bar off the viewport, since it's the drag handle
 		let minLimit = -1*(window.visualViewport.height - $frameEl.outerHeight())/2;
-		// Don't go more than halfway down off the viewport vertically
-		let maxLimit = window.visualViewport.height/2;
+		// Don't go too far down the page: (whole page height) - (initial position)
+		let maxLimit = $("body").innerHeight() - window.visualViewport.height/2;
 		return constrain(val, minLimit, maxLimit);
 	};
-	//transition: all 0.3s cubic-bezier(0, 0.07, 0.68, 0.99) 0s
 	this.$head.find(".oo-ui-processDialog-location").css({"cursor":"move"});
 	window.interact( ".oo-ui-window-frame" ).draggable({
 		allowFrom: ".oo-ui-processDialog-location", // handle to drag from (dialog's title bar)

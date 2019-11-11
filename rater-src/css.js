@@ -36,6 +36,10 @@ table.diff td div {
 html body.rater-mainWindow-open .oo-ui-windowManager-modal > .oo-ui-dialog.oo-ui-window-active {
     position: static;
     padding: 0;
+}` +
+// Increase z-index, to be above skin menus etc
+`html body.rater-mainWindow-open .oo-ui-dialog.oo-ui-window-active > div {
+    z-index: 110;
 }
 `;
 

@@ -208,8 +208,14 @@ MainWindow.prototype.makeDraggable = function() {
 				position.x = constrainX(position.x + event.dx);
 				position.y = constrainY(position.y + event.dy);
 				event.target.style.transform = `translate(${position.x}px, ${position.y}px)`;
-			},
+			}
 		}
+	});
+	window.interact( ".oo-ui-processDialog-location" ).on("up", function() {
+	// Make sure final positions are whole numbers
+		position.x = Math.round(position.x);
+		position.y = Math.round(position.y);
+		$frameEl.css("transform",`translate(${position.x}px, ${position.y}px)`);
 	});
 };
 

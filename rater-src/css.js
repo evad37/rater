@@ -37,9 +37,10 @@ html body.rater-mainWindow-open .oo-ui-windowManager-modal > .oo-ui-dialog.oo-ui
     position: static;
     padding: 0;
 }` +
-// Increase z-index, to be above skin menus etc
+// Increase z-index, to be above skin menus etc; smooth transition for dragging (transform:translate)
 `html body.rater-mainWindow-open .oo-ui-dialog.oo-ui-window-active > div {
     z-index: 110;
+    transition: all 0.25s ease-out 0s, transform 0s !important
 }
 `;
 

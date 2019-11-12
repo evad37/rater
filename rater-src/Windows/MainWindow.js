@@ -179,6 +179,8 @@ MainWindow.prototype.initialize = function () {
 };
 
 MainWindow.prototype.makeDraggable = function() {
+	let $frameEl = this.$element.find(".oo-ui-window-frame");
+	let $handleEl = this.$element.find(".oo-ui-processDialog-location").css({"cursor":"move"});
 	// Position for css translate transformations, relative to initial position
 	// (which is centered on viewport when scrolled to top)
 	let position = { x: 0, y: 0 };
@@ -187,7 +189,6 @@ MainWindow.prototype.makeDraggable = function() {
 		if (val > maxVal) return maxVal;
 		return val;
 	};
-	let $frameEl = this.$element.find(".oo-ui-window-frame");
 	const constrainX = (val) => {
 		// Don't too far horizontally (leave at least 100px visible)
 		let limit = window.visualViewport.width/2 + $frameEl.outerWidth()/2 - 100;
@@ -200,23 +201,42 @@ MainWindow.prototype.makeDraggable = function() {
 		let maxLimit = $("body").innerHeight() - window.visualViewport.height/2;
 		return constrain(val, minLimit, maxLimit);
 	};
-	this.$head.find(".oo-ui-processDialog-location").css({"cursor":"move"});
-	window.interact( ".oo-ui-window-frame" ).draggable({
-		allowFrom: ".oo-ui-processDialog-location", // handle to drag from (dialog's title bar)
-		listeners: {
-			move (event) {
-				position.x = constrainX(position.x + event.dx);
-				position.y = constrainY(position.y + event.dy);
-				event.target.style.transform = `translate(${position.x}px, ${position.y}px)`;
-			}
+
+	let pointerdown = false;
+	let dragFrom = {};
+
+	let onDragStart = event => {
+		pointerdown = true;
+		dragFrom.x = event.clientX;
+		dragFrom.y = event.clientY;
+	};
+	let onDragMove = event => {
+		if (!pointerdown || dragFrom.x == null || dragFrom.y === null) {
+			return;
 		}
-	});
-	window.interact( ".oo-ui-processDialog-location" ).on("up", function() {
-	// Make sure final positions are whole numbers
+		const dx = event.clientX - dragFrom.x;
+		const dy = event.clientY - dragFrom.y;
+		dragFrom.x = event.clientX;
+		dragFrom.y = event.clientY;
+		position.x = constrainX(position.x + dx);
+		position.y = constrainY(position.y + dy);
+		$frameEl.css("transform", `translate(${position.x}px, ${position.y}px)`);
+	};
+	let onDragEnd = () => {
+		pointerdown = false;
+		delete dragFrom.x;
+		delete dragFrom.y;
+		// Make sure final positions are whole numbers
 		position.x = Math.round(position.x);
 		position.y = Math.round(position.y);
 		$frameEl.css("transform",`translate(${position.x}px, ${position.y}px)`);
-	});
+	};
+
+	// Use pointer events if available; otherwise use mouse events
+	const pointer = ("PointerEvent" in window) ? "pointer" : "mouse";
+	$handleEl.on(pointer+"down.raterMainWin", onDragStart);
+	$("body").on(pointer+"move.raterMainWin", onDragMove);
+	$("body").on(pointer+"up.raterMainWin", onDragEnd);
 };
 
 // Override the getBodyHeight() method to specify a custom height
@@ -233,8 +253,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 	data = data || {};
 	return MainWindow.super.prototype.getSetupProcess.call( this, data )
 		.next( () => {
-			// Set up dragability
-			data.interactScriptLoaded.then( () => this.makeDraggable() );
+			this.makeDraggable();
 			// Set up preferences
 			this.setPreferences(data.preferences);
 			this.prefsForm.setPrefValues(data.preferences);
@@ -433,6 +452,10 @@ MainWindow.prototype.getTeardownProcess = function ( data ) {
 			this.contentArea.setItem( this.editLayout );
 			this.topBar.setDisabled(false);
 			this.oresLabel.toggle(false).$element.find(".oresPrediction").empty();
+
+			this.$element.find(".oo-ui-window-frame").css("transform","");
+			this.$element.find(".oo-ui-processDialog-location").off(".raterMainWin");
+			$("body").off(".raterMainWin");
 		} );
 };
 

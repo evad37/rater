@@ -487,6 +487,7 @@ MainWindow.prototype.onSetClasses = function(classVal) {
 	this.bannerList.items.forEach(banner => {
 		if (banner.hasClassRatings) {
 			banner.classDropdown.getMenu().selectItemByData(classVal);
+			banner.classDropdown.setAutofilled(false);
 		}
 	});
 };
@@ -495,6 +496,7 @@ MainWindow.prototype.onSetImportances = function(importanceVal) {
 	this.bannerList.items.forEach(banner => {
 		if (banner.hasImportanceRatings) {
 			banner.importanceDropdown.getMenu().selectItemByData(importanceVal);
+			banner.importanceDropdown.setAutofilled(false);
 		}
 	});
 };

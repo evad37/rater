@@ -12,6 +12,8 @@ var ParameterListWidget = function ParameterListWidget( config ) {
 		$group: this.$element
 	} );
 	this.addItems( config.items );
+
+	this.$element.addClass("rater-parameterListWidget");
     
 	this.preferences = config.preferences;
    

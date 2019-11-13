@@ -6,8 +6,9 @@ function DropdownParameterWidget( config ) {
 
 	// Call parent constructor
 	DropdownParameterWidget.super.call( this, config );
-    
+
 	this.$overlay = config.$overlay;
+	this.$element.addClass("rater-dropdownParameterWidget");
     
 	// Autofilled icon
 	this.autofilled = !!config.autofilled;

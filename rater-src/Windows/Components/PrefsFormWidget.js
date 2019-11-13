@@ -6,6 +6,8 @@ function PrefsFormWidget( config ) {
 	// Call parent constructor
 	PrefsFormWidget.super.call( this, config );
 
+	this.$element.addClass("rater-prefsFormWidget");
+
 	this.layout =  new OO.ui.FieldsetLayout( {
 		label: "Preferences",
 		$element: this.$element

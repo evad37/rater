@@ -176,7 +176,7 @@ function ParameterWidget( parameter, paramData, config ) {
 	}
 
 	/* --- CONTAINER FOR BOTH LAYOUTS --- */
-	this.$element = $("<div>")
+	this.$element = $("<div>").addClass("rater-parameterWidget")
 		.css({
 			"width": "unset",
 			"display": "inline-block",

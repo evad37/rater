@@ -2,6 +2,7 @@ var SuggestionLookupTextInputWidget = function SuggestionLookupTextInputWidget( 
 	OO.ui.TextInputWidget.call( this, config );
 	OO.ui.mixin.LookupElement.call( this, config );
 	this.suggestions = config.suggestions || [];
+	this.$element.addClass("rater-suggestionLookupTextInputWidget");
 };
 OO.inheritClass( SuggestionLookupTextInputWidget, OO.ui.TextInputWidget );
 OO.mixinClass( SuggestionLookupTextInputWidget, OO.ui.mixin.LookupElement );

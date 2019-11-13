@@ -200,7 +200,7 @@ function BannerWidget( template, config ) {
 	/* --- OVERALL LAYOUT/DISPLAY --- */
 
 	// Display the layout elements, and a rule
-	this.$element.append(
+	this.$element.addClass("rater-bannerWidget").append(
 		this.titleLayout.$element,
 		this.parameterList.$element,
 		this.addParameterLayout.$element

@@ -11,7 +11,7 @@ var BannerListWidget = function BannerListWidget( config ) {
 	OO.ui.mixin.GroupElement.call( this, {
 		$group: this.$element
 	} );
-	this.$element.css({"padding":"20px 10px 16px 10px"});
+	this.$element.addClass("rater-bannerListWidget").css({"padding":"20px 10px 16px 10px"});
 
 	// Prefs
 	this.preferences = config.preferences;

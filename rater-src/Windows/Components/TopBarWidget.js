@@ -100,7 +100,7 @@ function TopBarWidget( config ) {
 	this.menuButtons.$element.prepend(this.setAllDropDown.$element);
 
 	// Put everything into a layout
-	this.$element
+	this.$element.addClass("rater-topBarWidget")
 		.css({
 			"position": "fixed",
 			"width": "100%",

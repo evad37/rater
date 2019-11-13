@@ -191,14 +191,14 @@ MainWindow.prototype.makeDraggable = function() {
 	};
 	const constrainX = (val) => {
 		// Don't too far horizontally (leave at least 100px visible)
-		let limit = window.visualViewport.width/2 + $frameEl.outerWidth()/2 - 100;
+		let limit = window.innerWidth/2 + $frameEl.outerWidth()/2 - 100;
 		return constrain(val, -1*limit, limit);
 	};
 	const constrainY = (val) => {
 		// Can't take title bar off the viewport, since it's the drag handle
-		let minLimit = -1*(window.visualViewport.height - $frameEl.outerHeight())/2;
+		let minLimit = -1*(window.innerHeight - $frameEl.outerHeight())/2;
 		// Don't go too far down the page: (whole page height) - (initial position)
-		let maxLimit = $("body").innerHeight() - window.visualViewport.height/2;
+		let maxLimit = (document.documentElement||document).scrollHeight - window.innerHeight/2;
 		return constrain(val, minLimit, maxLimit);
 	};
 

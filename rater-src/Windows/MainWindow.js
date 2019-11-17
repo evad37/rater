@@ -229,11 +229,13 @@ MainWindow.prototype.makeDraggable = function() {
 		// Make sure final positions are whole numbers
 		position.x = Math.round(position.x);
 		position.y = Math.round(position.y);
-		$frameEl.css("transform",`translate(${position.x}px, ${position.y}px)`);
+		$frameEl.css("transform", `translate(${position.x}px, ${position.y}px)`);
 	};
 
 	// Use pointer events if available; otherwise use mouse events
 	const pointer = ("PointerEvent" in window) ? "pointer" : "mouse";
+	$handleEl.on(pointer+"enter.raterMainWin", () => $frameEl.css("will-change", "transform") ); // Tell browser to optimise transform
+	$handleEl.on(pointer+"leave.raterMainWin", () => { if (!pointerdown) $frameEl.css("will-change", ""); } ); // Remove optimisation if not dragging
 	$handleEl.on(pointer+"down.raterMainWin", onDragStart);
 	$("body").on(pointer+"move.raterMainWin", onDragMove);
 	$("body").on(pointer+"up.raterMainWin", onDragEnd);

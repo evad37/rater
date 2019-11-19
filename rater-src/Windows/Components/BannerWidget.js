@@ -281,8 +281,13 @@ BannerWidget.prototype.onUpdatedSize = function() {
 	this.emit("updatedSize");
 };
 
-BannerWidget.prototype.onParameterChange = function() {
+BannerWidget.prototype.setChanged = function() {
 	this.changed = true;
+	this.emit("changed");
+};
+
+BannerWidget.prototype.onParameterChange = function() {
+	this.setChanged();
 	if (this.mainText === "WikiProject Biography" || this.redirectTargetMainText === "WikiProject Biography") {
 		// Emit event so BannerListWidget can update the banner shell template (if present)
 		this.emit("biographyBannerChange");		
@@ -290,7 +295,7 @@ BannerWidget.prototype.onParameterChange = function() {
 };
 
 BannerWidget.prototype.onClassChange = function() {
-	this.changed = true;
+	this.setChanged();
 	this.classChanged = true;
 	var classItem = this.classDropdown.getMenu().findSelectedItem();
 	if (classItem && classItem.getData() == null ) {
@@ -300,7 +305,7 @@ BannerWidget.prototype.onClassChange = function() {
 };
 
 BannerWidget.prototype.onImportanceChange = function() {
-	this.changed = true;
+	this.setChanged();
 	this.importanceChanged = true;
 	var importanceItem = this.importanceDropdown.getMenu().findSelectedItem();
 	if (importanceItem && importanceItem.getData() == null ) {
@@ -419,7 +424,7 @@ BannerWidget.prototype.bypassRedirect = function() {
 	this.name = this.redirectTargetMainText;
 	this.mainText = this.redirectTargetMainText;
 	this.redirectTargetMainText = null;
-	this.changed = true;
+	this.setChanged();
 };
 
 BannerWidget.prototype.makeWikitext = function() {
@@ -433,14 +438,15 @@ BannerWidget.prototype.makeWikitext = function() {
 	var importanceItem = this.hasImportanceRatings && this.importanceDropdown.getMenu().findSelectedItem();
 	var importanceVal = importanceItem && importanceItem.getData();
 
-	return "{{" +
+	return ("{{" +
 		this.name +
 		( this.hasClassRatings && classVal!=null ? `${pipe}class${equals}${classVal||""}` : "" ) +
 		( this.hasImportanceRatings && importanceVal!=null ? `${pipe}importance${equals}${importanceVal||""}` : "" ) +
 		this.parameterList.getParameterItems()
 			.map(parameter => parameter.makeWikitext(pipe, equals))
 			.join("") +
-		this.endBracesStyle;
+		this.endBracesStyle)
+		.replace(/\n+}}$/, "\n}}"); // avoid empty line at end like [[Special:Diff/925982142]]
 };
 
 BannerWidget.prototype.setPreferences = function(prefs) {

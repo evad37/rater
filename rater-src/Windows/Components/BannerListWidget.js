@@ -17,10 +17,15 @@ var BannerListWidget = function BannerListWidget( config ) {
 	this.preferences = config.preferences;
 	
 	this.oresClass = config.oresClass;
+	
+	this.changed = false;
 
 	// Events
 	this.aggregate( {"remove": "bannerRemove"} );
 	this.connect( this, {"bannerRemove": "onBannerRemove"} );
+
+	this.aggregate( {"changed": "bannerChanged"} );
+	this.connect( this, {"bannerChanged": "setChanged"} );
 
 	this.aggregate( {"biographyBannerChange": "biographyBannerChanged"} );
 	this.connect( this, {"biographyBannerChanged": "syncShellTemplateWithBiographyBanner"} );
@@ -45,8 +50,13 @@ BannerListWidget.prototype.onUpdatedSize = function() {
 	this.emit("updatedSize");
 };
 
+BannerListWidget.prototype.setChanged = function() {
+	this.changed = true;
+};
+
 BannerListWidget.prototype.onBannerRemove = function ( banner ) {
 	this.removeItems([banner]);
+	this.setChanged();
 };
 
 BannerListWidget.prototype.syncShellTemplateWithBiographyBanner = function( biographyBanner ) {

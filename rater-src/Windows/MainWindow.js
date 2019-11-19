@@ -439,6 +439,13 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 		this.contentArea.setItem( this.editLayout );
 		this.topBar.setDisabled(false);
 		this.updateSize();
+
+	} else if (!action && this.bannerList.changed) {
+		// Confirm closing of dialog if there have been changes 
+		return new OO.ui.Process().next(
+			OO.ui.confirm("Changes you have made will be discarded.", {title:"Close Rater?"})
+				.then(confirmed => confirmed ? this.close() : null)
+		);
 	}
 
 	return MainWindow.super.prototype.getActionProcess.call( this, action );
@@ -502,6 +509,7 @@ MainWindow.prototype.onSearchSelect = function() {
 			return BannerWidget.newFromTemplateName(name, {preferences: this.preferences, $overlay: this.$overlay})
 				.then(banner => {
 					this.bannerList.addItems( [banner] );
+					banner.setChanged();
 					this.updateSize();
 				});
 		})

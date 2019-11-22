@@ -176,6 +176,27 @@ MainWindow.prototype.initialize = function () {
 		"clearAll": "onClearAll"
 	});
 	this.bannerList.connect(this, {"updatedSize": "updateSize"});
+
+	/* Handle certain keyboard events. Doesn't quite work yet, as it requires something in
+	  the Rater window to be focused.
+	 
+	this.$body.keydown(function( event ) {
+		let scrollAmount;
+		switch(event.which) {
+			case 33: // page up
+				scrollAmount = this.$body.scrollTop() - this.$body.height()*0.9;
+				break;
+			case 34: // page down
+				scrollAmount = this.$body.scrollTop() + this.$body.height()*0.9;
+				break;
+			default:
+				return;
+		}
+		this.$body.scrollTop(scrollAmount);
+		event.preventDefault();
+	}.bind(this))
+	
+	*/
 };
 
 MainWindow.prototype.makeDraggable = function() {
@@ -546,6 +567,10 @@ MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {
 	var bannersWikitext = this.bannerList.makeWikitext();
 	if (!talkWikitext) {
 		return bannersWikitext.trim();
+	}
+	// Add to the end if talkpage is itself a redirect
+	if (/^#REDIRECT/i.test(talkWikitext)) {
+		return talkWikitext.trim() + "\n" + bannersWikitext.trim();
 	}
 	// Reparse templates, in case talkpage wikitext has changed
 	var talkTemplates = parseTemplates(talkWikitext, true);

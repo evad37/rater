@@ -18,6 +18,7 @@ function BannerWidget( template, config ) {
 	/* --- PROPS --- */
 	this.paramData = template.paramData;
 	this.paramAliases = template.paramAliases || {};
+	this.parameterSuggestions = template.parameterSuggestions;
 	this.name = template.name;
 	this.wikitext = template.wikitext;
 	this.pipeStyle = template.pipeStyle;
@@ -159,6 +160,7 @@ function BannerWidget( template, config ) {
 		allowSuggestionsWhenEmpty: true,
 		$overlay: this.$overlay
 	});
+	this.updateAddParameterNameSuggestions();
 	this.addParameterValueInput = new SuggestionLookupTextInputWidget({
 		placeholder: "parameter value",
 		$element: $("<div style='display:inline-block;width:40%'>"),
@@ -292,6 +294,7 @@ BannerWidget.prototype.onParameterChange = function() {
 		// Emit event so BannerListWidget can update the banner shell template (if present)
 		this.emit("biographyBannerChange");		
 	}
+	this.updateAddParameterNameSuggestions();
 };
 
 BannerWidget.prototype.onClassChange = function() {
@@ -316,6 +319,7 @@ BannerWidget.prototype.onImportanceChange = function() {
 
 BannerWidget.prototype.showAddParameterInputs = function() {
 	this.addParameterLayout.toggle(true);
+	this.addParameterNameInput.focus();
 	this.onUpdatedSize();
 };
 
@@ -394,6 +398,18 @@ BannerWidget.prototype.onParameterAdd = function() {
 	this.addParameterNameInput.setValue("");
 	this.addParameterValueInput.setValue("");
 	this.addParameterNameInput.$input.focus();
+};
+
+BannerWidget.prototype.updateAddParameterNameSuggestions = function() {
+	let paramsInUse = {};
+	this.parameterList.getParameterItems().forEach(
+		paramWidget => paramsInUse[paramWidget.name] = true
+	);
+	this.addParameterNameInput.setSuggestions(
+		this.parameterSuggestions.filter(
+			suggestion => !paramsInUse[suggestion.data]
+		)
+	);
 };
 
 BannerWidget.prototype.onRemoveButtonClick = function() {

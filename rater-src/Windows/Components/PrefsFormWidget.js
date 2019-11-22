@@ -28,7 +28,7 @@ function PrefsFormWidget( config ) {
 		},
 		"minForShell": {
 			input: new OO.ui.NumberInputWidget( { "min": 2 } ),
-			label: "Minimun number of banners for WikiProject banner shell"
+			label: "Minimum number of banners for WikiProject banner shell"
 		},
 		"bypassRedirects": {
 			input: new OO.ui.ToggleSwitchWidget(),

@@ -568,10 +568,6 @@ MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {
 	if (!talkWikitext) {
 		return bannersWikitext.trim();
 	}
-	// Add to the end if talkpage is itself a redirect
-	if (/^#REDIRECT/i.test(talkWikitext)) {
-		return talkWikitext.trim() + "\n" + bannersWikitext.trim();
-	}
 	// Reparse templates, in case talkpage wikitext has changed
 	var talkTemplates = parseTemplates(talkWikitext, true);
 	// replace existing banners wikitext with a control character
@@ -596,12 +592,12 @@ MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {
 	talkTemplates.forEach(template => {
 		tempStr = tempStr.replace(template.wikitext, "");
 	});
-	if (tempStr.trim()) {
+	if (/^#REDIRECT/i.test(talkWikitext) || !tempStr.trim()) {
+		// Is a redirect, or everything is a template: insert at the end
+		return talkWikitext.trim() + "\n" + bannersWikitext.trim();
+	} else {
 		// There is non-template content, so insert at the start
 		return bannersWikitext.trim() + "\n" + talkWikitext.trim();
-	} else {
-		// Everything is a template, so insert at the end
-		return talkWikitext.trim() + "\n" + bannersWikitext.trim();
 	}
 };
 

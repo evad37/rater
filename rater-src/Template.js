@@ -446,7 +446,7 @@ Template.prototype.addMissingParams = function() {
 			if ( paraData.aliases.length ) {
 				var aliases = thisTemplate.parameters.filter(p => {
 					var isAlias = paraData.aliases.includes(p.name);
-					var isEmpty = !p.val;
+					var isEmpty = !p.value;
 					return isAlias && !isEmpty;
 				});
 				if ( aliases.length ) {

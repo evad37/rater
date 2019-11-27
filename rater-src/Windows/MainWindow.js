@@ -178,22 +178,23 @@ MainWindow.prototype.initialize = function () {
 	this.bannerList.connect(this, {"updatedSize": "onBannerListUpdateSize"});
 
 	// Handle certain keyboard events. Requires something in the Rater window to be focused,
-	// so add a tabindex to the body's parent container.
-	this.$body.parent().attr("tabindex", "999").keydown(function( event ) {
-		let scrollAmount;
-		switch(event.which) {
-		case 33: // page up
-			scrollAmount = this.$body.scrollTop() - this.$body.height()*0.9;
-			break;
-		case 34: // page down
-			scrollAmount = this.$body.scrollTop() + this.$body.height()*0.9;
-			break;
-		default:
-			return;
-		}
-		this.$body.scrollTop(scrollAmount);
-		event.preventDefault();
-	}.bind(this));
+	// so add a tabindex to the body and it's parent container.
+	this.$body.attr("tabindex", "999")
+		.parent().attr("tabindex", "999").keydown(function( event ) {
+			let scrollAmount;
+			switch(event.which) {
+			case 33: // page up
+				scrollAmount = this.$body.scrollTop() - this.$body.height()*0.9;
+				break;
+			case 34: // page down
+				scrollAmount = this.$body.scrollTop() + this.$body.height()*0.9;
+				break;
+			default:
+				return;
+			}
+			this.$body.scrollTop(scrollAmount);
+			event.preventDefault();
+		}.bind(this));
 	
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "rater",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Wikipedia userscript that helps assess pages for WikiProjects",
   "homepage": "https://github.com/evad37/rater",
   "browser": "index.js",

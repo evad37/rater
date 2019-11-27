@@ -175,7 +175,7 @@ MainWindow.prototype.initialize = function () {
 		"removeAll": "onRemoveAll",
 		"clearAll": "onClearAll"
 	});
-	this.bannerList.connect(this, {"updatedSize": "updateSize"});
+	this.bannerList.connect(this, {"updatedSize": "onBannerListUpdateSize"});
 
 	/* Handle certain keyboard events. Doesn't quite work yet, as it requires something in
 	  the Rater window to be focused.
@@ -197,6 +197,15 @@ MainWindow.prototype.initialize = function () {
 	}.bind(this))
 	
 	*/
+};
+
+MainWindow.prototype.onBannerListUpdateSize = function() {
+	// Get the current scroll amount
+	const scrollAmount = this.$body.scrollTop();
+	// Update size (which resets the scroll to 0)
+	this.updateSize();
+	// Scroll to where it was before
+	this.$body.scrollTop(scrollAmount);
 };
 
 MainWindow.prototype.makeDraggable = function() {

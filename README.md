@@ -1,10 +1,8 @@
 # Rater
 This is the source code for version 2 of the Wikipedia userscript [Rater](https://en.wikipedia.org/wiki/User:Evad37/rater).
-**This is currently *beta software*. It should be used with caution, to ensure results are as expected**
 
 ## Installation instructions and user guide
-- Version 1: See [https://en.wikipedia.org/wiki/User:Evad37/rater](https://en.wikipedia.org/wiki/User:Evad37/rater).
-- Version 2: Not yet written, but will likely be similar for the end user.
+See [https://en.wikipedia.org/wiki/User:Evad37/rater](https://en.wikipedia.org/wiki/User:Evad37/rater).
 
 ## Repository structure
 - `index.js` is the main entry point, written in ES5. This is published to [User:Evad37/rater.js](https://en.wikipedia.org/wiki/User:Evad37/rater.js) (when deploying), or  [User:Evad37/rater/sandbox.js](https://en.wikipedia.org/wiki/User:Evad37/rater/sandbox.js) (for sandbox testing of changes). Or [User:Evad37/rater/beta.js](https://en.wikipedia.org/wiki/User:Evad37/rater/beta.js) for beta testing.
@@ -38,5 +36,5 @@ This is the source code for version 2 of the Wikipedia userscript [Rater](https:
 - [ ] ... probably other things too - finish off this list, and/or put issues on the github page.
 ### Roadmap
 - [X] Complete the v2 rewrite
-- [ ] Get beta testers to try out the new version. Fix/adjust things as they get reported.
-- [ ] Release the new version generally.
+- [X] Get beta testers to try out the new version. Fix/adjust things as they get reported.
+- [X] Release the new version generally.

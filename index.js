@@ -2,7 +2,7 @@
  Rater --- by Evad37
  > Helps assess WikiProject banners.
 
- This script is a loader that will load the actual script from User:Evad37/rater/sandbox/app.js 
+ This script is a loader that will load the actual script from the /app.js subpage
  once Resource loader modules are loaded and the page DOM is ready.
  Source code is available at https://github.com/evad37/rater
 ***************************************************************************************************/

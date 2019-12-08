@@ -1,5 +1,5 @@
 import API from "./api";
-import {isAfterDate, mostFrequent} from "./util";
+import {isAfterDate, mostFrequent, filterAndMap} from "./util";
 import config from "./config";
 import * as cache from "./cache";
 
@@ -211,16 +211,10 @@ var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-contro
 	}
 	
 	if ( recursive ) {
-		var subtemplates = result.map(function(template) {
-			return template.wikitext.slice(2,-2);
-		})
-			.filter(function(templateWikitext) {
-				return /\{\{.*\}\}/.test(templateWikitext);
-			})
-			.map(function(templateWikitext) {
-				return parseTemplates(templateWikitext, true);
-			});
-		
+		var subtemplates = filterAndMap(result,
+			template => /\{\{(?:.|\n)*\}\}/.test(template.wikitext.slice(2,-2)),
+			template => parseTemplates(template.wikitext.slice(2,-2), true)
+		);
 		return result.concat.apply(result, subtemplates);
 	}
 

@@ -1,4 +1,4 @@
-var version = "2.0.9";
+var version = "2.0.10";
 
 // A global object that stores all the page and user configuration and settings
 var config = {

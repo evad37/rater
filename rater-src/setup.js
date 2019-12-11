@@ -39,6 +39,7 @@ var setupRater = function(clickEvent) {
 
 	// Parse talk page for banners (task 3)
 	var parseTalkPromise = loadTalkPromise.then(wikitext => parseTemplates(wikitext, true)) // Get all templates
+		.then(templates => templates.filter(template => template.getTitle() !== null)) // Filter out invalid templates (e.g. parser functions)
 		.then(templates => getWithRedirectTo(templates)) // Check for redirects
 		.then(templates => {
 			return bannersPromise.then((allBanners) => { // Get list of all banner templates
@@ -95,9 +96,9 @@ var setupRater = function(clickEvent) {
 	// Retrieve rating from ORES (task 6, only needed for articles)
 	var shouldGetOres = ( config.mw.wgNamespaceNumber <= 1 );
 	if ( shouldGetOres ) {
-		var latestRevIdPromise = currentPage.isTalkPage()
+		var latestRevIdPromise = !currentPage.isTalkPage()
 			? $.Deferred().resolve(config.mw.wgRevisionId)
-			: 	API.get( {
+			: API.get( {
 				action: "query",
 				format: "json",
 				prop: "revisions",

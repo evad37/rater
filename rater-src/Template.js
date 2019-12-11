@@ -161,17 +161,21 @@ var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-contro
 	// number of unclosed braces
 	var numUnclosed = 0;
 
-	// are we inside a comment or between nowiki tags?
+	// are we inside a comment, or between nowiki tags, or in a {{{parameter}}}?
 	var inComment = false;
 	var inNowiki = false;
+	var inParameter = false;
 
 	var startIdx, endIdx;
 	
 	for (var i=0; i<n; i++) {
 		
-		if ( !inComment && !inNowiki ) {
-			
-			if (wikitext[i] === "{" && wikitext[i+1] === "{") {
+		if ( !inComment && !inNowiki && !inParameter ) {
+
+			if (wikitext[i] === "{" && wikitext[i+1] === "{" && wikitext[i+2] === "{" && wikitext[i+3] !== "{") {
+				inParameter = true;
+				i += 2;
+			} else if (wikitext[i] === "{" && wikitext[i+1] === "{") {
 				if (numUnclosed === 0) {
 					startIdx = i+2;
 				}
@@ -195,7 +199,7 @@ var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-contro
 				i += 7;
 			} 
 
-		} else { // we are in a comment or nowiki
+		} else { // we are in a comment or nowiki or {{{parameter}}}
 			if (wikitext[i] === "|") {
 				// swap out pipes with \x01 character
 				wikitext = strReplaceAt(wikitext, i,"\x01");
@@ -205,6 +209,9 @@ var parseTemplates = function(wikitext, recursive) { /* eslint-disable no-contro
 			} else if (/^<\/nowiki ?>/.test(wikitext.slice(i, i + 10))) {
 				inNowiki = false;
 				i += 8;
+			} else if (wikitext[i] === "}" && wikitext[i+1] === "}" && wikitext[i+2] === "}") {
+				inParameter = false;
+				i += 2;
 			}
 		}
 
@@ -234,7 +241,10 @@ var getWithRedirectTo = function(templates) {
 	return API.get({
 		"action": "query",
 		"format": "json",
-		"titles": templatesArray.map(template => template.getTitle().getPrefixedText()),
+		"titles": filterAndMap(templatesArray,
+			template => template.getTitle() !== null,
+			template => template.getTitle().getPrefixedText()
+		),
 		"redirects": 1
 	}).then(function(result) {
 		if ( !result || !result.query ) {
@@ -242,7 +252,10 @@ var getWithRedirectTo = function(templates) {
 		}
 		if ( result.query.redirects ) {
 			result.query.redirects.forEach(function(redirect) {
-				var i = templatesArray.findIndex(template => template.getTitle().getPrefixedText() === redirect.from);
+				var i = templatesArray.findIndex(template => {
+					let title = template.getTitle();
+					return title && title.getPrefixedText() === redirect.from;
+				});
 				if (i !== -1) {
 					templatesArray[i].redirectTarget = mw.Title.newFromText(redirect.to);
 				}

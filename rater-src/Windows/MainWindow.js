@@ -114,7 +114,10 @@ MainWindow.prototype.initialize = function () {
 			$("<span class='oresPrediction'>")
 		)
 	}).toggle(false);
-	this.$foot.prepend(this.oresLabel.$element);
+	this.pagetypeLabel = new OO.ui.LabelWidget({
+		$element: $("<span style='float:right; padding: 10px; max-width: 33.33%; text-align: center;'>")
+	}).toggle(false);
+	this.$foot.prepend(this.oresLabel.$element, this.pagetypeLabel.$element);
 
 	/* --- CONTENT AREA --- */
 
@@ -288,23 +291,42 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 			// Set up preferences
 			this.setPreferences(data.preferences);
 			this.prefsForm.setPrefValues(data.preferences);
+			// Set subject page info
+			this.subjectPage = data.subjectPage;
+			this.pageInfo = {
+				redirect: data.redirectTarget,
+				isDisambig: data.disambig,
+				hasStubtag: data.stubtag,
+				isArticle: data.isArticle
+			};
 			// Set up edit mode banners
 			this.actions.setMode("edit");
 			this.bannerList.oresClass = data.ores && data.ores.prediction;
 			this.bannerList.addItems(
 				data.banners.map( bannerTemplate => new BannerWidget(
 					bannerTemplate,
-					{ preferences: this.preferences,
-						$overlay: this.$overlay }
+					{
+						preferences: this.preferences,
+						$overlay: this.$overlay,
+						isArticle: this.pageInfo.isArticle
+					}
 				) )
 			);
-			// Show ORES prediction, if available
-			if (data.ores) {
+			// Show page type, or ORES prediction, if available
+			if (this.pageInfo.redirect) {
+				this.pagetypeLabel.setLabel("Redirect page").toggle(true);
+			} else if (this.pageInfo.isDisambig) {
+				this.pagetypeLabel.setLabel("Disambiguation page").toggle(true);
+			} else if (data.ores) {
 				this.oresClass = data.ores.prediction;
 				this.oresLabel.toggle(true).$element.find(".oresPrediction").append(
 					$("<strong>").text(data.ores.prediction),
 					"&nbsp;(" + data.ores.probability + ")"
 				);
+			} else if (this.pageInfo.isArticle) {
+				this.pagetypeLabel.setLabel("Article page").toggle(true);
+			} else {
+				this.pagetypeLabel.setLabel( this.subjectPage.getNamespacePrefix().slice(0,-1) + " page" ).toggle(true);
 			}
 			// Set props for use in making wikitext and edit summaries
 			this.talkWikitext = data.talkWikitext;
@@ -324,7 +346,6 @@ MainWindow.prototype.getReadyProcess = function ( data ) {
 
 // Use the getActionProcess() method to do things when actions are clicked
 MainWindow.prototype.getActionProcess = function ( action ) {
-	// FIXME: Make these actually do the things.
 	if ( action === "showPrefs" ) {
 		this.actions.setMode("prefs");
 		this.contentArea.setItem( this.prefsLayout );
@@ -382,7 +403,10 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 					)
 				)
 			) )
-		).next( () => this.close() );
+		).next( () => this.close({
+			success: true,
+			upgradedStub: this.pageInfo.hasStubtag && this.isRatedAndNotStub()
+		}) );
 
 	} else if ( action === "preview" ) {
 		return new OO.ui.Process().next(
@@ -490,6 +514,7 @@ MainWindow.prototype.getTeardownProcess = function ( data ) {
 			this.contentArea.setItem( this.editLayout );
 			this.topBar.setDisabled(false);
 			this.oresLabel.toggle(false).$element.find(".oresPrediction").empty();
+			this.pagetypeLabel.toggle(false).setLabel("");
 
 			this.$element.find(".oo-ui-window-frame").css("transform","");
 			this.$element.find(".oo-ui-processDialog-location").off(".raterMainWin");
@@ -529,13 +554,16 @@ MainWindow.prototype.onSearchSelect = function() {
 	} else if (name === "WikiProject Disambiguation" && $("#ca-talk.new").length !== 0 && this.bannerList.items.length === 0) {
 		// eslint-disable-next-line no-useless-escape
 		confirmText = "New talk pages shouldn't be created if they will only contain the \{\{WikiProject Disambiguation\}\} banner. Continue?";
-		// TODO: ask for confirmation
 	}
 	$.when( confirmText ? OO.ui.confirm(confirmText) : true)
 		.then( confirmed => {
 			if (!confirmed) return;
 			// Create Template object
-			return BannerWidget.newFromTemplateName(name, {preferences: this.preferences, $overlay: this.$overlay})
+			return BannerWidget.newFromTemplateName(name, {
+				preferences: this.preferences,
+				$overlay: this.$overlay,
+				isArticle: this.pageInfo.isArticle
+			})
 				.then(banner => {
 					this.bannerList.addItems( [banner] );
 					banner.setChanged();
@@ -607,6 +635,15 @@ MainWindow.prototype.transformTalkWikitext = function(talkWikitext) {
 		// There is non-template content, so insert at the start
 		return bannersWikitext.trim() + "\n" + talkWikitext.trim();
 	}
+};
+
+MainWindow.prototype.isRatedAndNotStub = function() {
+	const nonStubRatinggs = this.bannerList.items.filter(banner =>
+		banner.hasClassRatings &&
+		banner.classDropdown.getValue() &&
+		banner.classDropdown.getValue() !== "Stub"
+	);
+	return nonStubRatinggs.length > 0;
 };
 
 MainWindow.prototype.makeEditSummary = function() {

@@ -17,10 +17,27 @@ import windowManager from "./windowManager";
 		document.getElementsByTagName("body")[0].classList.add("rater-mainWindow-open");
 		// Open the window
 		windowManager.openWindow("main", data)
-			.closed.then( () =>
-			// Remove the css class, so as to not interfere with other OOUI windows
-				document.getElementsByTagName("body")[0].classList.remove("rater-mainWindow-open")
-			);
+			.closed.then( result => {
+				// Remove the css class, so as to not interfere with other OOUI windows
+				document.getElementsByTagName("body")[0].classList.remove("rater-mainWindow-open");
+				// Show notification when saved successfully
+				if (result && result.success) {
+					const $message = $("<span>").append(
+						$("<strong>").text("Ratings saved successfully.")
+					);
+					if (result.upgradedStub) {
+						$message.append(
+							$("<br>"),
+							// TODO: There should be a link that will edit the article for you
+							$("<span>").text("Note that the article appears to be tagged as a stub.")
+						);
+					}
+					mw.notify(
+						$message,
+						{ autoHide: true, autoHideSeconds: "long", tag: "Rater-saved" }
+					);
+				}
+			} );
 	};
 
 	const showSetupError = (code, jqxhr) => OO.ui.alert(

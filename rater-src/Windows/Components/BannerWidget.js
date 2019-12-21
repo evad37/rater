@@ -81,7 +81,7 @@ function BannerWidget( template, config ) {
 				items: [
 					new OO.ui.MenuOptionWidget( {
 						data: null,
-						label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">(no class)</span>")
+						label: new OO.ui.HtmlSnippet(`<span style="color:#777">(${config.isArticle ? "no class" : "auto-detect"})</span>`)
 					} ),
 					...template.classes.map( classname =>
 						new OO.ui.MenuOptionWidget( {
@@ -103,7 +103,7 @@ function BannerWidget( template, config ) {
 			menu: {
 				items: [
 					new OO.ui.MenuOptionWidget( {
-						data: null, label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">(no importance)</span>")
+						data: null, label: new OO.ui.HtmlSnippet(`<span style="color:#777">(${config.isArticle ? "no importance" : "auto-detect"})</span>`)
 					} ),
 					...template.importances.map(importance =>
 						new OO.ui.MenuOptionWidget( {

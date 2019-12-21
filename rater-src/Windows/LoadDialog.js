@@ -55,7 +55,7 @@ LoadDialog.prototype.initialize = function () {
 			$element: $("<p style=\"display:block\">")
 		}),
 		new OO.ui.LabelWidget( {
-			label: "Checking if page redirects...",
+			label: "Checking subject page...",
 			$element: $("<p style=\"display:block\">")
 		}),
 		new OO.ui.LabelWidget( {
@@ -109,7 +109,7 @@ LoadDialog.prototype.addTaskPromiseHandlers = function(taskPromises) {
 		widget.setLabel(widget.getLabel() + " Done!");
 		// Increment status bar. Show a smooth transition by
 		// using small steps over a short duration.
-		var totalIncrement = 20; // percent
+		var totalIncrement = 100 / this.setuptasks.length; // percent
 		var totalTime = 400; // milliseconds
 		var totalSteps = 10;
 		var incrementPerStep = totalIncrement / totalSteps;

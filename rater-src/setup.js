@@ -16,6 +16,7 @@ var setupRater = function(clickEvent) {
 	var currentPage = mw.Title.newFromText(config.mw.wgPageName);
 	var talkPage = currentPage && currentPage.getTalkPage();
 	var subjectPage = currentPage && currentPage.getSubjectPage();
+	var subjectIsArticle = config.mw.wgNamespaceNumber <= 1;
  
 	// Get preferences (task 0)
 	var prefsPromise = getPrefs();
@@ -78,23 +79,32 @@ var setupRater = function(clickEvent) {
 		});
 	});
 
-	// Check if page is a redirect (task 5) - but don't error out if request fails
-	var redirectCheckPromise = API.getRaw(subjectPage.getPrefixedText())
+	// Check subject page features (task 5) - but don't error out if request fails
+	var subjectPageCheckPromise = API.getRaw(subjectPage.getPrefixedText())
 		.then(
 			// Success
-			function(rawPage) { 
-				if ( /^\s*#REDIRECT/i.test(rawPage) ) {
-					// get redirection target, or boolean true
-					return rawPage.slice(rawPage.indexOf("[[")+2, rawPage.indexOf("]]")) || true;
-				}
-				return false;
+			function(rawPage) {
+				var result = {};
+				// Check if page is a redirect (if so, get redirection target or boolean true)
+				result.redirect = /^\s*#REDIRECT/i.test(rawPage)
+					? rawPage.slice(rawPage.indexOf("[[")+2, rawPage.indexOf("]]")) || true 
+					: false;
+				// Check if article is a disambiguation page
+				result.disambig = subjectIsArticle
+					? /(?:disambiguation|disambig|dab|Mil-unit-dis|Numberdis)[^{]*}}/i.test(rawPage)
+					: null;
+				// Check if article is tagged as a stub
+				result.stubtag = subjectIsArticle
+					? /(?:\{\{\s*|-| |\w)stub[^{]*}}/i.test(rawPage)
+					: null;
+				return result;
 			},
 			// Failure (ignored)
 			function() { return null; }
 		);
 
 	// Retrieve rating from ORES (task 6, only needed for articles)
-	var shouldGetOres = ( config.mw.wgNamespaceNumber <= 1 );
+	var shouldGetOres = ( subjectIsArticle ); // TODO: Don't need to get ORES for redirects or disambigs
 	if ( shouldGetOres ) {
 		var latestRevIdPromise = !currentPage.isTalkPage()
 			? $.Deferred().resolve(config.mw.wgRevisionId)
@@ -145,7 +155,7 @@ var setupRater = function(clickEvent) {
 			loadTalkPromise,
 			parseTalkPromise,
 			templateDetailsPromise,
-			redirectCheckPromise,
+			subjectPageCheckPromise,
 			shouldGetOres && oresPromise
 		],
 		ores: shouldGetOres,
@@ -159,20 +169,24 @@ var setupRater = function(clickEvent) {
 		prefsPromise,
 		loadTalkPromise,
 		templateDetailsPromise,
-		redirectCheckPromise,
+		subjectPageCheckPromise,
 		shouldGetOres && oresPromise
 	).then(
 		// All succeded
-		function(preferences, talkWikitext, banners, redirectTarget, oresPredicition ) {
+		function(preferences, talkWikitext, banners, subjectPageCheck, oresPredicition ) {
 			var result = {
 				success: true,
 				talkpage: talkPage,
+				subjectPage: subjectPage,
 				talkWikitext: talkWikitext,
 				banners: banners,
-				preferences: preferences
+				preferences: preferences,
+				isArticle: subjectIsArticle
 			};
-			if (redirectTarget) {
-				result.redirectTarget = redirectTarget;
+			if (subjectPageCheck) {
+				result.redirectTarget = subjectPageCheck.redirect;
+				result.disambig = subjectPageCheck.disambig;
+				result.stubtag = subjectPageCheck.stubtag;
 			}
 			if (oresPredicition) {
 				result.ores = oresPredicition;

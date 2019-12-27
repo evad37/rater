@@ -187,6 +187,10 @@ BannerListWidget.prototype.autofillImportanceRatings = function() {
 	if (!this.preferences.autofillImportance) {
 		return;
 	}
+	const isRegularArticle = this.pageInfo && this.pageInfo.isArticle && !this.pageInfo.redirect && !this.pageInfo.isDisambig;
+	if (!isRegularArticle) {
+		return;
+	}
 	// TODO: Should try to find a smarter, banner-specific way of determining importance.
 	// Maybe do something with  ORES's "drafttopic" model.
 	const autoImportance = "Low";

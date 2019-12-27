@@ -302,6 +302,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 			// Set up edit mode banners
 			this.actions.setMode("edit");
 			this.bannerList.oresClass = data.ores && data.ores.prediction;
+			this.bannerList.pageInfo = this.pageInfo;
 			this.bannerList.addItems(
 				data.banners.map( bannerTemplate => new BannerWidget(
 					bannerTemplate,

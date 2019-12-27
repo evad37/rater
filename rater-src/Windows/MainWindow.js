@@ -496,7 +496,7 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 	} else if (!action && this.bannerList.changed) {
 		// Confirm closing of dialog if there have been changes 
 		return new OO.ui.Process().next(
-			OO.ui.confirm("Changes you have made will be discarded.", {title:"Close Rater?"})
+			OO.ui.confirm("Changes made will be discarded.", {title:"Close Rater?"})
 				.then(confirmed => confirmed ? this.close() : null)
 		);
 	}

@@ -91,7 +91,7 @@ var setupRater = function(clickEvent) {
 					: false;
 				// Check if article is a disambiguation page
 				result.disambig = subjectIsArticle
-					? /(?:disambiguation|disambig|dab|Mil-unit-dis|Numberdis)[^{]*}}/i.test(rawPage)
+					? /{{[^|}]*(?:disambiguation|disambig|dab|Mil-unit-dis|Numberdis|hndis|geodis)[^{]*}}/i.test(rawPage)
 					: null;
 				// Check if article is tagged as a stub
 				result.stubtag = subjectIsArticle

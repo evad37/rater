@@ -224,7 +224,11 @@ BannerListWidget.prototype.makeWikitext = function() {
 	if (!shellTemplate) {
 		return bannersWikitext;
 	}
-	var shellParam1 = new ParameterWidget({name:"1", value:"\n"+bannersWikitext+"\n"});
+	var shellParam1 = new ParameterWidget({
+		name:"1",
+		value: "\n" + bannersWikitext + "\n" +
+			(shellTemplate.nonStandardTemplates	? shellTemplate.nonStandardTemplates + "\n" : "")
+	});
 	shellTemplate.parameterList.addItems([ shellParam1 ]);
 	var shellWikitext = shellTemplate.makeWikitext();
 	shellTemplate.parameterList.removeItems([ shellParam1 ]);

@@ -313,6 +313,13 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 					}
 				) )
 			);
+			let shellTemplateBanner = this.bannerList.items.find(banner => banner.isShellTemplate);
+			if (shellTemplateBanner && shellTemplateBanner.shellParam1Value) {
+				shellTemplateBanner.nonStandardTemplates = this.bannerList.items.reduce(
+					(bannersList, curBanner) => bannersList.replace(curBanner.wikitext, ""),
+					shellTemplateBanner.shellParam1Value
+				).trim().replace(/\n+/g, "\n");
+			}
 			// Show page type, or ORES prediction, if available
 			if (this.pageInfo.redirect) {
 				this.pagetypeLabel.setLabel("Redirect page").toggle(true);

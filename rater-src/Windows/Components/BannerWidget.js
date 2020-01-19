@@ -135,7 +135,11 @@ function BannerWidget( template, config ) {
 		template.parameters,
 		param => {
 			if ( this.isShellTemplate ) {
-				return param.name != "1";
+				if (param.name == "1") {
+					this.shellParam1Value = param.value;
+					return false;
+				}
+				return true;
 			}
 			return param.name !== "class" && param.name !== "importance";
 		},

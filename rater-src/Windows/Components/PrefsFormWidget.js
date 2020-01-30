@@ -71,6 +71,13 @@ function PrefsFormWidget( config ) {
 				]
 			}).selectItemByData("preferences"),
 			label: "Add edited pages to watchlist"
+		},
+		"resetCache": {
+			input: new OO.ui.ButtonWidget( {
+				label: "Reset cache",
+				title: "Remove cached data, including list of WikiProjects and template parameters",
+				flags: ["destructive"]
+			} )
 		}
 	};
 
@@ -82,6 +89,8 @@ function PrefsFormWidget( config ) {
 			} )
 		]);
 	}
+
+	this.preferences.resetCache.input.connect(this, {"click": "onResetCacheClick"});
 }
 OO.inheritClass( PrefsFormWidget, OO.ui.Widget );
 
@@ -134,6 +143,15 @@ PrefsFormWidget.prototype.getPrefs = function() {
 		prefs[prefName] = value;
 	}
 	return prefs;
+};
+
+PrefsFormWidget.prototype.onResetCacheClick = function() {
+	OO.ui.confirm("After reseting cache, Rater will close and restart. Any changes made will be discarded.")
+		.then(confirmed => {
+			if (confirmed) { 
+				this.emit("resetCache");
+			}
+		});
 };
 
 export default PrefsFormWidget;

@@ -180,7 +180,7 @@ var getBannerOptions = () => getBannersFromCache().then(
 	() => {
 		var bannersPromise = getListOfBannersFromApi();
 		bannersPromise.then(cacheBanners);
-		return bannersPromise;
+		return bannersPromise.then((_banners, options) => options);
 	}
 );
 

@@ -7,6 +7,7 @@ import { setPrefs as ApiSetPrefs } from "../prefs";
 import { parseTemplates } from "../Template";
 import TopBarWidget from "./Components/TopBarWidget";
 import { filterAndMap, uniqueArray } from "../util";
+import * as cache from "../cache";
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -198,6 +199,8 @@ MainWindow.prototype.initialize = function () {
 			this.$body.scrollTop(scrollAmount);
 			event.preventDefault();
 		}.bind(this));
+
+	this.prefsForm.connect(this, {"resetCache": "onResetCache"});
 	
 };
 
@@ -384,8 +387,14 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 			)
 		);
 
+	} else if ( action === "clearCache" ) {
+		return new OO.ui.Process().next(() => {
+			cache.clearAllItems();
+			this.close({restart: true});
+		});
+
+
 	} else if ( action === "closePrefs" ) {
-		console.log("[Rater] Close prefs clicked!");
 		this.actions.setMode("edit");
 		this.contentArea.setItem( this.editLayout );
 		this.topBar.setDisabled(false);
@@ -534,6 +543,10 @@ MainWindow.prototype.setPreferences = function(prefs) {
 	this.preferences = $.extend({}, appConfig.defaultPrefs, prefs);
 	// Applies preferences to existing items in the window:
 	this.bannerList.setPreferences(this.preferences);
+};
+
+MainWindow.prototype.onResetCache = function() {
+	this.executeAction("clearCache");
 };
 
 MainWindow.prototype.onSearchSelect = function() {

@@ -1,7 +1,7 @@
 var SuggestionLookupTextInputWidget = function SuggestionLookupTextInputWidget( config ) {
 	OO.ui.TextInputWidget.call( this, config );
 	OO.ui.mixin.LookupElement.call( this, config );
-	this.suggestions = config.suggestions || [];
+	this.suggestions = Array.isArray(config.suggestions) ? config.suggestions : [];
 	this.$element.addClass("rater-suggestionLookupTextInputWidget");
 };
 OO.inheritClass( SuggestionLookupTextInputWidget, OO.ui.TextInputWidget );
@@ -9,6 +9,12 @@ OO.mixinClass( SuggestionLookupTextInputWidget, OO.ui.mixin.LookupElement );
 
 // Set suggestion. param: Object[] with objects of the form { data: ... , label: ... }
 SuggestionLookupTextInputWidget.prototype.setSuggestions = function(suggestions) {
+	if (!Array.isArray(suggestions)) {
+		if (suggestions != null) {
+			console.warn("[Rater] SuggestionLookupTextInputWidget.prototype.setSuggestions called with a non-array value:", suggestions);
+		}
+		return;
+	}
 	this.suggestions = suggestions;
 };
 

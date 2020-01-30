@@ -18,6 +18,10 @@ import windowManager from "./windowManager";
 		// Open the window
 		windowManager.openWindow("main", data)
 			.closed.then( result => {
+				if (result && result.restart) {
+					setupRater().then(showMainWindow, showSetupError);
+					return;
+				}
 				// Remove the css class, so as to not interfere with other OOUI windows
 				document.getElementsByTagName("body")[0].classList.remove("rater-mainWindow-open");
 				// Show notification when saved successfully

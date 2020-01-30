@@ -7,16 +7,16 @@ import {isAfterDate} from "./util";
  *  be updated for next time).
  * @param {Number} expiryDays Number of days after which the cached data may be deleted.
  */
-var write = function(key, val, staleDays, expiryDays) {
+const write = function(key, val, staleDays, expiryDays) {
 	try {
-		var defaultStaleDays = 1;
-		var defaultExpiryDays = 30;
-		var millisecondsPerDay = 24*60*60*1000;
+		const defaultStaleDays = 1;
+		const defaultExpiryDays = 30;
+		const millisecondsPerDay = 24*60*60*1000;
 
-		var staleDuration = (staleDays || defaultStaleDays)*millisecondsPerDay;
-		var expiryDuration = (expiryDays || defaultExpiryDays)*millisecondsPerDay;
-		
-		var stringVal = JSON.stringify({
+		const staleDuration = (staleDays || defaultStaleDays)*millisecondsPerDay;
+		const expiryDuration = (expiryDays || defaultExpiryDays)*millisecondsPerDay;
+
+		const stringVal = JSON.stringify({
 			value: val,
 			staleDate: new Date(Date.now() + staleDuration).toISOString(),
 			expiryDate: new Date(Date.now() + expiryDuration).toISOString()
@@ -29,10 +29,10 @@ var write = function(key, val, staleDays, expiryDays) {
  * @returns {Array|Object|String|Null} Cached array or object, or empty string if not yet cached,
  *          or null if there was error.
  */
-var read = function(key) {
-	var val;
+const read = function(key) {
+	let val;
 	try {
-		var stringVal = localStorage.getItem("Rater-"+key);
+		const stringVal = localStorage.getItem("Rater-"+key);
 		if ( stringVal !== "" ) {
 			val = JSON.parse(stringVal);
 		}
@@ -46,21 +46,35 @@ var read = function(key) {
 	}
 	return val || null;
 };
-var clearItemIfInvalid = function(key) {
-	var isRaterKey = key.indexOf("Rater-") === 0;
-	if ( !isRaterKey ) {
+
+const isRaterKey = key => key && key.indexOf("Rater-") === 0;
+
+const clearItemIfInvalid = function(key) {
+	if ( !isRaterKey(key) ) {
 		return;
 	}
-	var item = read(key.replace("Rater-",""));
-	var isInvalid = !item || !item.expiryDate || isAfterDate(item.expiryDate);
+	const item = read(key.replace("Rater-",""));
+	const isInvalid = !item || !item.expiryDate || isAfterDate(item.expiryDate);
 	if ( isInvalid ) {
 		localStorage.removeItem(key);
 	}
 };
-var clearInvalidItems = function() {
-	for (var i = 0; i < localStorage.length; i++) {
+
+const clearInvalidItems = function() {
+	// Loop backwards as localStorage length will decrease as items are removed
+	for (let i = localStorage.length; i >= 0; i--) {
 		setTimeout(clearItemIfInvalid, 100, localStorage.key(i));
 	}
 };
 
-export { write, read, clearItemIfInvalid, clearInvalidItems };
+const clearAllItems = function() {
+	// Loop backwards as localStorage length will decrease as items are removed
+	for (let i = localStorage.length; i >= 0; i--) {
+		let key = localStorage.key(i);
+		if (isRaterKey(key)) {
+			localStorage.removeItem(key);
+		}
+	}
+};
+
+export { write, read, clearItemIfInvalid, clearInvalidItems, clearAllItems };

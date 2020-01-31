@@ -478,12 +478,22 @@ Template.prototype.addMissingParams = function() {
 Template.prototype.setClassesAndImportances = function() {
 	var parsed = $.Deferred();
 
+	// Don't re-parse if alreadt parsed; no need to parse shell templates
 	if ( (this.classes && this.importances) || this.isShellTemplate() ) {
 		return parsed.resolve();
 	}
 
 	var mainText = this.getTitle().getMainText();
-	
+
+	// Some projects have hardcoded values, to avoid standard classes or to prevent API issues (timeout and/or node count exceeded)
+	const redirectTargetOrMainText = this.redirectTarget ? this.redirectTarget.getMainText() : mainText;
+	if ( config.customBanners[redirectTargetOrMainText] ) {
+		this.classes = config.customBanners[redirectTargetOrMainText].classes;
+		this.importances = config.customBanners[redirectTargetOrMainText].importances;
+		return parsed.resolve();
+	}
+
+	// Otherwise try reading from cached data
 	var cachedRatings = cache.read(mainText+"-ratings");
 	if (
 		cachedRatings &&
@@ -500,7 +510,7 @@ Template.prototype.setClassesAndImportances = function() {
 			return parsed;
 		} // else: Use the cache data for now, but also fetch new data from API
 	}
-	
+
 	var wikitextToParse = "";	
 	config.bannerDefaults.extendedClasses.forEach(function(classname, index) {
 		wikitextToParse += "{{" + mainText + "|class=" + classname + "|importance=" +
@@ -514,21 +524,11 @@ Template.prototype.setClassesAndImportances = function() {
 		prop: "categorieshtml"
 	})
 		.then((result) => {
-			var redirectOrMainText = this.redirectTarget ? this.redirectTarget.getMainText() : mainText;
 			var catsHtml = result.parse.categorieshtml["*"];
 			var extendedClasses = config.bannerDefaults.extendedClasses.filter(function(cl) {
 				return catsHtml.indexOf(cl+"-Class") !== -1;
 			});
-			var defaultClasses = ( redirectOrMainText === "WikiProject Portals" )
-				? ["List"]
-				: config.bannerDefaults.classes;
-			var customClasses = config.customClasses[redirectOrMainText] || [];
-			this.classes = [].concat(
-				customClasses,
-				defaultClasses,
-				extendedClasses
-			);
-
+			this.classes = [...config.bannerDefaults.classes, ...extendedClasses];
 			this.importances = config.bannerDefaults.extendedImportances.filter(function(imp) {
 				return catsHtml.indexOf(imp+"-importance") !== -1;
 			});

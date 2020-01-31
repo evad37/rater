@@ -1,4 +1,4 @@
-var version = "2.2.0";
+var version = "2.2.1";
 
 // A global object that stores all the page and user configuration and settings
 var config = {
@@ -78,20 +78,60 @@ var config = {
 			"NA"
 		]
 	},
-	customClasses: {
-		"WikiProject Military history": [
-			"AL",
-			"BL",
-			"CL"
-		],
-		"WikiProject Portals": [
-			"FPo",
-			"Complete",
-			"Substantial",
-			"Basic",
-			"Incomplete",
-			"Meta"
-		]
+	customBanners: {
+		"WikiProject Military history": {
+			classes: [
+				"FA",
+				"FL",
+				"A",
+				"GA",
+				"B",
+				"C",
+				"Start",
+				"Stub",
+				"List",
+				"AL",
+				"BL",
+				"CL",
+				"Category",
+				"Draft",
+				"File",
+				"Portal",
+				"Project",
+				"Template",
+				"Disambig",
+				"Redirect",
+				"Book"			
+			],
+			importances: []
+		},
+		"WikiProject Portals": {
+			classes: [
+				"FPo",
+				"Complete",
+				"Substantial",
+				"Basic",
+				"Incomplete",
+				"Meta",
+				"List",
+				"Category",
+				"Draft",
+				"File",
+				"Project",
+				"Template",
+				"Disambig",
+				"NA",
+				"Redirect"
+			],
+			importances: [
+				"Top",
+				"High",
+				"Mid",
+				"Low",
+				"Bottom",
+				"NA"
+			]
+		}
 	},
 	shellTemplates: [
 		"WikiProject banner shell",

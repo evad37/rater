@@ -19,7 +19,9 @@ import windowManager from "./windowManager";
 		windowManager.openWindow("main", data)
 			.closed.then( result => {
 				if (result && result.restart) {
-					setupRater().then(showMainWindow, showSetupError);
+					windowManager.removeWindows(["main"])
+						.then(setupRater)
+						.then(showMainWindow, showSetupError);
 					return;
 				}
 				// Remove the css class, so as to not interfere with other OOUI windows

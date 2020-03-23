@@ -42,7 +42,14 @@ var getListOfBannersFromApi = function() {
 			abbreviation: "wrappers",
 			banners: [],
 			processed: $.Deferred()
-		}
+		},
+		{
+			title: "Category:WikiProject banner templates not based on WPBannerMeta",
+			abbreviation: "notWPBM",
+			banners: [],
+			processed: $.Deferred()
+		},
+
 	];
 
 	var processQuery = function(result, catIndex) {
@@ -99,9 +106,9 @@ var getListOfBannersFromApi = function() {
 };
 
 /**
- * Gets banners/options from cache, if there and not too old
+ * Gets banners from cache, if there and not too old
  * 
- * @returns {Promise} Resolved with: banners object, bannerOptions object
+ * @returns {Promise} Resolved with banners object
  */
 var getBannersFromCache = function() {
 	var cachedBanners = cache.read("banners");
@@ -120,18 +127,27 @@ var getBannersFromCache = function() {
 };
 
 /**
- * Gets banner names, grouped by type (withRatings, withoutRatings, wrappers)
- * @returns {Promise<Object>} {withRatings:string[], withoutRatings:string[], wrappers:string[]>}
+ * Gets banner names, grouped by type (withRatings, withoutRatings, wrappers, notWPBM)
+ * @returns {Promise<Object>} Object of string arrays keyed by type (withRatings, withoutRatings, wrappers, notWPBM)
  */
-var getBannerNames = () => getBannersFromCache().then(
-	// Success: pass through
-	banners => banners,
-	// Failure: get from Api, then cache them
-	() => {
+var getBannerNames = () => getBannersFromCache()
+	.then( banners => {
+		// Ensure all keys exist
+		if (!banners.withRatings || !banners.withoutRatings || !banners.wrappers || !banners.notWPBM) {
+			getListOfBannersFromApi().then(cacheBanners);
+			return $.extend(
+				{ withRatings: [], withoutRatings: [], wrappers: [], notWPBM: [] },
+				banners
+			);
+		}
+		// Success: pass through
+		return banners;
+	} )
+	.catch( () => {
+		// Failure: get from Api, then cache them
 		let bannersPromise = getListOfBannersFromApi();
 		bannersPromise.then(cacheBanners);
 		return bannersPromise;
-	}
-);
+	} );
 
 export {getBannerNames};

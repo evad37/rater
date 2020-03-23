@@ -41,6 +41,13 @@ function TopBarWidget( config ) {
 					name: bannerName,
 					wrapper: true
 				}
+			})),
+			...banners.notWPBM.map(bannerName => ({
+				label: bannerName.replace("WikiProject ", ""),
+				data: {
+					name: bannerName,
+					withoutRatings: true
+				}
 			}))
 		])
 		.then(bannerOptions => this.searchBox.setSuggestions(bannerOptions));

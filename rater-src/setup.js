@@ -65,7 +65,10 @@ var setupRater = function(clickEvent) {
 						if (allBanners.wrappers.includes(mainText)) {
 							template.redirectTarget = mw.Title.newFromText("Template:Subst:" + mainText);
 						}
-						if (allBanners.withoutRatings.includes(mainText)) {
+						if (
+							allBanners.withoutRatings.includes(mainText) ||
+							allBanners.notWPBM.includes(mainText)
+						) {
 							template.withoutRatings = true;
 						}
 						return template;

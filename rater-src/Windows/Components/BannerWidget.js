@@ -262,11 +262,18 @@ OO.inheritClass( BannerWidget, OO.ui.Widget );
 
 /**
  * @param {String} templateName
+ * @param {Object} [data]
+ * @param {Boolean} data.withoutRatings
+ * @param {Boolean} data.isWrapper
+ * @param {Object} config
  * @returns {Promise<BannerWidget>}
  */
-BannerWidget.newFromTemplateName = function(templateName, config) {
+BannerWidget.newFromTemplateName = function(templateName, data, config) {
 	var template = new Template();
 	template.name = templateName;
+	if (data && data.withoutRatings) {
+		template.withoutRatings = true;
+	}
 	return getWithRedirectTo(template)
 		.then(function(template) {
 			return $.when(

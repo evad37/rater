@@ -1,7 +1,6 @@
 import appConfig from "../../config";
 import SuggestionLookupTextInputWidget from "./SuggestionLookupTextInputWidget";
-import {getBannerOptions} from "../../getBanners";
-import * as cache from "../../cache";
+import {getBannerNames} from "../../getBanners";
 
 function TopBarWidget( config ) {
 	// Configuration initialization
@@ -20,11 +19,31 @@ function TopBarWidget( config ) {
 	// Search box
 	this.searchBox = new SuggestionLookupTextInputWidget( {
 		placeholder: "Add a WikiProject...",
-		suggestions: cache.read("bannerOptions"),
 		$element: $("<div style='display:inline-block; margin:0 -1px; width:calc(100% - 55px);'>"),
 		$overlay: this.$overlay,
 	} );
-	getBannerOptions().then(bannerOptions => this.searchBox.setSuggestions(bannerOptions));
+	getBannerNames()
+		.then(banners => [
+			...banners.withRatings.map(bannerName => ({
+				label: bannerName.replace("WikiProject ", ""),
+				data: {name: bannerName}
+			})),
+			...banners.withoutRatings.map(bannerName => ({
+				label: bannerName.replace("WikiProject ", ""),
+				data: {
+					name: bannerName,
+					withoutRatings: true
+				}
+			})),
+			...banners.wrappers.map(bannerName => ({
+				label: bannerName.replace("WikiProject ", "") + " [template wrapper]",
+				data: {
+					name: bannerName,
+					wrapper: true
+				}
+			}))
+		])
+		.then(bannerOptions => this.searchBox.setSuggestions(bannerOptions));
     
 	// Add button
 	this.addBannerButton = new OO.ui.ButtonWidget( {
@@ -128,8 +147,8 @@ function TopBarWidget( config ) {
 }
 OO.inheritClass( TopBarWidget, OO.ui.PanelLayout );
 
-TopBarWidget.prototype.onSearchSelect = function() {
-	this.emit("searchSelect");
+TopBarWidget.prototype.onSearchSelect = function(data) {
+	this.emit("searchSelect", data);
 };
 
 TopBarWidget.prototype.onRatingChoose = function(item) {

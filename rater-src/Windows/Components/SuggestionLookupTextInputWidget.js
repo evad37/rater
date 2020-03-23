@@ -45,10 +45,16 @@ SuggestionLookupTextInputWidget.prototype.getLookupMenuOptionsFromData = functio
 
 // Extend onLookupMenuChoose method to emit an choose event
 SuggestionLookupTextInputWidget.prototype.onLookupMenuChoose = function ( item ) {
+	// Get data
+	const itemData = item.getData();
+	// Simplify item data if it is an object with a name property
+	if (itemData && itemData.name) {
+		item.setData(itemData.name);
+	}
 	// First blur the input, to prevent the menu popping back up
 	this.$input.blur();
 	OO.ui.mixin.LookupElement.prototype.onLookupMenuChoose.call(this, item);
-	this.emit("choose", item.getData() );
+	this.emit("choose", itemData );
 };
 
 export default SuggestionLookupTextInputWidget;

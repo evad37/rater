@@ -5,6 +5,7 @@ import {getBannerNames} from "./getBanners";
 import * as cache from "./cache";
 import windowManager from "./windowManager";
 import { getPrefs } from "./prefs";
+import { filterAndMap } from "./util";
 
 var setupRater = function(clickEvent) {
 	if ( clickEvent ) {
@@ -44,24 +45,32 @@ var setupRater = function(clickEvent) {
 		.then(templates => getWithRedirectTo(templates)) // Check for redirects
 		.then(templates => {
 			return bannersPromise.then((allBanners) => { // Get list of all banner templates
-				return templates.filter(template => { // Filter out non-banners
-					if (template.isShellTemplate()) { return true; }
-					var mainText = template.redirectTarget
-						? template.redirectTarget.getMainText()
-						: template.getTitle().getMainText();
-					return allBanners.withRatings.includes(mainText) || 
-                    allBanners.withoutRatings.includes(mainText) ||
-					allBanners.wrappers.includes(mainText);
-				})
-					.map(function(template) { // Set wrapper target if needed
+				return filterAndMap(
+					templates, 			
+					// Filter out non-banners
+					template => { 
+						if (template.isShellTemplate()) { return true; }
+						var mainText = template.redirectTarget
+							? template.redirectTarget.getMainText()
+							: template.getTitle().getMainText();
+						return allBanners.withRatings.includes(mainText) || 
+						allBanners.withoutRatings.includes(mainText) ||
+						allBanners.wrappers.includes(mainText);
+					},
+					// Set additional properties if needed
+					template => {
 						var mainText = template.redirectTarget
 							? template.redirectTarget.getMainText()
 							: template.getTitle().getMainText();
 						if (allBanners.wrappers.includes(mainText)) {
 							template.redirectTarget = mw.Title.newFromText("Template:Subst:" + mainText);
 						}
+						if (allBanners.withoutRatings.includes(mainText)) {
+							template.withoutRatings = true;
+						}
 						return template;
-					});
+					}
+				);
 			});
 		});
 	

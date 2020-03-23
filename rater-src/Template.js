@@ -478,8 +478,8 @@ Template.prototype.addMissingParams = function() {
 Template.prototype.setClassesAndImportances = function() {
 	var parsed = $.Deferred();
 
-	// Don't re-parse if alreadt parsed; no need to parse shell templates
-	if ( (this.classes && this.importances) || this.isShellTemplate() ) {
+	// Don't re-parse if already parsed; no need to parse shell templates or banners without ratings
+	if ( (this.classes && this.importances) || this.isShellTemplate() || this.withoutRatings ) {
 		return parsed.resolve();
 	}
 

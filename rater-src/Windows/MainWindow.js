@@ -549,7 +549,7 @@ MainWindow.prototype.onResetCache = function() {
 	this.executeAction("clearCache");
 };
 
-MainWindow.prototype.onSearchSelect = function() {
+MainWindow.prototype.onSearchSelect = function(data) {
 	this.topBar.searchBox.pushPending();
 	var name = this.topBar.searchBox.getValue().trim();
 	if (!name) {
@@ -580,7 +580,7 @@ MainWindow.prototype.onSearchSelect = function() {
 		.then( confirmed => {
 			if (!confirmed) return;
 			// Create Template object
-			return BannerWidget.newFromTemplateName(name, {
+			return BannerWidget.newFromTemplateName(name, data, {
 				preferences: this.preferences,
 				$overlay: this.$overlay,
 				isArticle: this.pageInfo.isArticle

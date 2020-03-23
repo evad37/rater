@@ -2,9 +2,8 @@ import API, { makeErrorMsg } from "./api";
 import { isAfterDate } from "./util";
 import * as cache from "./cache";
 
-var cacheBanners = function(banners, bannerOptions) {
+var cacheBanners = function(banners) {
 	cache.write("banners", banners, 2, 60);
-	cache.write("bannerOptions", bannerOptions, 2, 60);
 };
 
 /**
@@ -88,25 +87,12 @@ var getListOfBannersFromApi = function() {
 	});
 	
 	categories[categories.length-1].processed.then(function(){
-		var banners = {};
-		var stashBanner = function(catObject) {
+		let banners = {};
+		categories.forEach(catObject => {
 			banners[catObject.abbreviation] = catObject.banners;
-		};
-		var mergeBanners = function(mergeIntoThisArray, catObject) {
-			return $.merge(mergeIntoThisArray, catObject.banners);
-		};
-		var makeOption = function(bannerName) {
-			var isWrapper = ( -1 !== $.inArray(bannerName, categories[2].banners) );
-			return {
-				data:  ( isWrapper ? "subst:" : "") + bannerName,
-				label: bannerName.replace("WikiProject ", "") + ( isWrapper ? " [template wrapper]" : "")
-			};
-		};
-		categories.forEach(stashBanner);
+		});
 		
-		var bannerOptions = categories.reduce(mergeBanners, []).map(makeOption);
-		
-		finishedPromise.resolve(banners, bannerOptions);
+		finishedPromise.resolve(banners);
 	});
 	
 	return finishedPromise;
@@ -119,69 +105,33 @@ var getListOfBannersFromApi = function() {
  */
 var getBannersFromCache = function() {
 	var cachedBanners = cache.read("banners");
-	var cachedBannerOptions = cache.read("bannerOptions");
 	if (
 		!cachedBanners ||
-		!cachedBanners.value || !cachedBanners.staleDate ||
-		!cachedBannerOptions ||
-		!cachedBannerOptions.value || !cachedBannerOptions.staleDate
+		!cachedBanners.value ||
+		!cachedBanners.staleDate
 	) {
 		return $.Deferred().reject();
 	}
-	if ( isAfterDate(cachedBanners.staleDate) || isAfterDate(cachedBannerOptions.staleDate) ) {
+	if ( isAfterDate(cachedBanners.staleDate) ) {
 		// Update in the background; still use old list until then  
 		getListOfBannersFromApi().then(cacheBanners);
 	}
-	return $.Deferred().resolve(cachedBanners.value, cachedBannerOptions.value);
+	return $.Deferred().resolve(cachedBanners.value);
 };
-
-/**
- * Gets banners/options from cache or API.
- * Has side affect of adding/updating/clearing cache.
- * 
- * @returns {Promise<Object, Array>} banners object, bannerOptions object
- *
-var getBanners = () => getBannersFromCache().then(
-	// Success: pass through
-	(banners, options) => $.Deferred().resolve(banners, options),
-	// Failure: get from Api, then cache them
-	() => {
-		var bannersPromise = getListOfBannersFromApi();
-		bannersPromise.then(cacheBanners);
-		return bannersPromise;
-	}
-);
- */
 
 /**
  * Gets banner names, grouped by type (withRatings, withoutRatings, wrappers)
  * @returns {Promise<Object>} {withRatings:string[], withoutRatings:string[], wrappers:string[]>}
  */
 var getBannerNames = () => getBannersFromCache().then(
-	// Success: pass through (first param only)
+	// Success: pass through
 	banners => banners,
 	// Failure: get from Api, then cache them
 	() => {
-		var bannersPromise = getListOfBannersFromApi();
+		let bannersPromise = getListOfBannersFromApi();
 		bannersPromise.then(cacheBanners);
 		return bannersPromise;
 	}
 );
 
-/**
- * Gets banners as {data, label} objects, for use in our SuggestionLookupTextInputWidget
- * component (or other OOUI widgets like OO.ui.ComboBoxInputWidget)
- * @returns {Promise<Object[]>} Ratings as {data:string, label:string} objects
- */
-var getBannerOptions = () => getBannersFromCache().then(
-	// Success: pass through (second param only)
-	(_banners, options) => options,
-	// Failure: get from Api, then cache them
-	() => {
-		var bannersPromise = getListOfBannersFromApi();
-		bannersPromise.then(cacheBanners);
-		return bannersPromise.then((_banners, options) => options);
-	}
-);
-
-export {getBannerNames, getBannerOptions};
+export {getBannerNames};

@@ -110,18 +110,21 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 		this.items.length >= this.preferences.minForShell &&
 		!this.items.some(banner => banner.isShellTemplate)
 	) {
-		BannerWidget.newFromTemplateName(config.shellTemplates[0], {preferences: this.preferences})
-			.then(shellBannerWidget => {
-				OO.ui.mixin.GroupElement.prototype.addItems.call( this, [shellBannerWidget], 0 );
-				var biographyBanner =  this.items.find(
-					banner => banner.mainText === "WikiProject Biography" || banner.redirectTargetMainText === "WikiProject Biography"
-				);
-				if (biographyBanner) {
-					this.syncShellTemplateWithBiographyBanner(biographyBanner);
-				}
-				// emit updatedSize event 
-				this.onUpdatedSize();
-			});
+		BannerWidget.newFromTemplateName(
+			config.shellTemplates[0],
+			{withoutRatings: true},
+			{preferences: this.preferences}
+		).then(shellBannerWidget => {
+			OO.ui.mixin.GroupElement.prototype.addItems.call( this, [shellBannerWidget], 0 );
+			var biographyBanner =  this.items.find(
+				banner => banner.mainText === "WikiProject Biography" || banner.redirectTargetMainText === "WikiProject Biography"
+			);
+			if (biographyBanner) {
+				this.syncShellTemplateWithBiographyBanner(biographyBanner);
+			}
+			// emit updatedSize event 
+			this.onUpdatedSize();
+		});
 	}
 
 	// Autofill ratings (if able to, and if enabled in preferences)

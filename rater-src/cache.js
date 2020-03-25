@@ -1,4 +1,5 @@
 import {isAfterDate} from "./util";
+// <nowiki>
 
 /** write
  * @param {String} key
@@ -78,3 +79,4 @@ const clearAllItems = function() {
 };
 
 export { write, read, clearItemIfInvalid, clearInvalidItems, clearAllItems };
+// </nowiki>

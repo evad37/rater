@@ -1,4 +1,5 @@
 import { makeErrorMsg } from "../api";
+// <nowiki>
 
 /* var incrementProgressByInterval = function() {
 	var incrementIntervalDelay = 100;
@@ -178,3 +179,4 @@ LoadDialog.prototype.getTeardownProcess = function ( data ) {
 };
 
 export default LoadDialog;
+// </nowiki>

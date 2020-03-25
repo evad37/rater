@@ -3,10 +3,9 @@ import autoStart from "./autostart";
 import styles from "./css.js";
 import { makeErrorMsg } from "./api";
 import windowManager from "./windowManager";
+// <nowiki>
 
 (function App() {
-	// <nowiki>
-
 	mw.util.addCSS(styles);
 
 	const showMainWindow = data => {
@@ -69,3 +68,4 @@ import windowManager from "./windowManager";
 	// Invocation by auto-start (do not show message on error)
 	autoStart().then(showMainWindow);
 })();
+// </nowiki>

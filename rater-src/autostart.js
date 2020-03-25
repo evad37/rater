@@ -2,6 +2,7 @@ import config from "./config";
 import { getPrefs } from "./prefs";
 import API, { makeErrorMsg } from "./api";
 import setupRater from "./setup";
+// <nowiki>
 
 var autoStart = function autoStart() {
 
@@ -79,3 +80,4 @@ var autoStart = function autoStart() {
 };
 
 export default autoStart;
+// </nowiki>

@@ -1,3 +1,5 @@
+// <nowiki>
+
 var SuggestionLookupTextInputWidget = function SuggestionLookupTextInputWidget( config ) {
 	OO.ui.TextInputWidget.call( this, config );
 	OO.ui.mixin.LookupElement.call( this, config );
@@ -58,3 +60,4 @@ SuggestionLookupTextInputWidget.prototype.onLookupMenuChoose = function ( item )
 };
 
 export default SuggestionLookupTextInputWidget;
+// </nowiki>

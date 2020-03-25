@@ -1,6 +1,7 @@
 import API, { makeErrorMsg } from "./api";
 import { isAfterDate } from "./util";
 import * as cache from "./cache";
+// <nowiki>
 
 var cacheBanners = function(banners) {
 	cache.write("banners", banners, 2, 60);
@@ -151,3 +152,4 @@ var getBannerNames = () => getBannersFromCache()
 	} );
 
 export {getBannerNames};
+// </nowiki>

@@ -2,6 +2,7 @@ import config from "../../config";
 import BannerWidget from "./BannerWidget";
 import { normaliseYesNo, filterAndMap, uniqueArray } from "../../util";
 import ParameterWidget from "./ParameterWidget";
+// <nowiki>
 
 var BannerListWidget = function BannerListWidget( config ) {
 	config = config || {};
@@ -239,3 +240,4 @@ BannerListWidget.prototype.makeWikitext = function() {
 };
 
 export default BannerListWidget;
+// </nowiki>

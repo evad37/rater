@@ -2,6 +2,7 @@ import API from "./api";
 import {isAfterDate, mostFrequent, filterAndMap} from "./util";
 import config from "./config";
 import * as cache from "./cache";
+// <nowiki>
 
 /** Template
  *
@@ -544,3 +545,4 @@ Template.prototype.setClassesAndImportances = function() {
 };
 
 export {Template, parseTemplates, getWithRedirectTo};
+// </nowiki>

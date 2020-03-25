@@ -6,6 +6,7 @@ import * as cache from "./cache";
 import windowManager from "./windowManager";
 import { getPrefs } from "./prefs";
 import { filterAndMap } from "./util";
+// <nowiki>
 
 var setupRater = function(clickEvent) {
 	if ( clickEvent ) {
@@ -226,3 +227,4 @@ var setupRater = function(clickEvent) {
 };
 
 export default setupRater;
+// </nowiki>

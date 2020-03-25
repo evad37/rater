@@ -8,6 +8,7 @@ import { parseTemplates } from "../Template";
 import TopBarWidget from "./Components/TopBarWidget";
 import { filterAndMap, uniqueArray } from "../util";
 import * as cache from "../cache";
+// <nowiki>
 
 function MainWindow( config ) {
 	MainWindow.super.call( this, config );
@@ -735,3 +736,4 @@ MainWindow.prototype.makeEditSummary = function() {
 };
 
 export default MainWindow;
+// </nowiki>

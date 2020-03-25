@@ -1,3 +1,5 @@
+// <nowiki>
+
 // Attribution: Diff styles from <https://en.wikipedia.org/wiki/Wikipedia:AutoWikiBrowser/style.css>
 const styles = `table.diff, td.diff-otitle, td.diff-ntitle { background-color: white; }
 td.diff-otitle, td.diff-ntitle { text-align: center; }
@@ -45,3 +47,4 @@ html body.rater-mainWindow-open .oo-ui-windowManager-modal > .oo-ui-dialog.oo-ui
 `;
 
 export default styles;
+// </nowiki>

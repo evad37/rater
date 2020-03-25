@@ -1,3 +1,5 @@
+// <nowiki>
+
 // Various utility functions and objects that might be used in multiple places
 
 var isAfterDate = function(dateString) {
@@ -189,3 +191,4 @@ export {
 	classMask,
 	importanceMask
 };
+// </nowiki>

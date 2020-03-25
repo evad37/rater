@@ -1,4 +1,5 @@
 import config from "./config";
+// <nowiki>
 
 var API = new mw.Api( {
 	ajax: {
@@ -170,3 +171,4 @@ var makeErrorMsg = function(first, second) {
 
 export default API;
 export { makeErrorMsg };
+// </nowiki>

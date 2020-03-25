@@ -1,4 +1,5 @@
 import { normaliseYesNo, filterAndMap } from "../../util";
+// <nowiki>
 
 function ParameterWidget( parameter, paramData, config ) {
 	// Configuration initialization
@@ -308,3 +309,4 @@ ParameterWidget.prototype.focusInput = function() {
 };
 
 export default ParameterWidget;
+// </nowiki>

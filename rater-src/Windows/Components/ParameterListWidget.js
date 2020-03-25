@@ -1,3 +1,5 @@
+// <nowiki>
+
 /**
  * @cfg {OO.ui.Element[]} items Items to be added
  * @cfg {Number} displayLimit The most to show at once. If the number of items
@@ -166,3 +168,4 @@ ParameterListWidget.prototype.setPreferences = function(prefs) {
 };
 
 export default ParameterListWidget;
+// </nowiki>

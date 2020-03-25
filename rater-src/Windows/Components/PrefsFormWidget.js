@@ -1,4 +1,5 @@
 import config from "../../config";
+// <nowiki>
 
 function PrefsFormWidget( config ) {
 	// Configuration initialization
@@ -155,3 +156,4 @@ PrefsFormWidget.prototype.onResetCacheClick = function() {
 };
 
 export default PrefsFormWidget;
+// </nowiki>

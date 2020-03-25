@@ -1,3 +1,4 @@
+// <nowiki>
 var version = "2.4.1";
 
 // A global object that stores all the page and user configuration and settings
@@ -227,3 +228,4 @@ var config = {
 };
 
 export default config;
+// </nowiki>

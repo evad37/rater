@@ -1,5 +1,6 @@
 import LoadDialog from "./Windows/LoadDialog";
 import MainWindow from "./Windows/MainWindow";
+// <nowiki>
 
 var factory = new OO.Factory();
 
@@ -13,3 +14,4 @@ var manager = new OO.ui.WindowManager( {
 $( document.body ).append( manager.$element );
 
 export default manager;
+// </nowiki>

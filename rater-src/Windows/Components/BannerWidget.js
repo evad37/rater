@@ -4,6 +4,7 @@ import DropdownParameterWidget from "./DropdownParameterWidget";
 import SuggestionLookupTextInputWidget from "./SuggestionLookupTextInputWidget";
 import { filterAndMap, classMask, importanceMask } from "../../util";
 import {Template, getWithRedirectTo} from "../../Template";
+// <nowiki>
 
 function BannerWidget( template, config ) {
 	// Configuration initialization
@@ -485,3 +486,4 @@ BannerWidget.prototype.setPreferences = function(prefs) {
 };
 
 export default BannerWidget;
+// </nowiki>

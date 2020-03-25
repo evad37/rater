@@ -1,3 +1,5 @@
+// <nowiki>
+
 function DropdownParameterWidget( config ) {
 	// Configuration initialization
 	config = $.extend({
@@ -53,3 +55,4 @@ DropdownParameterWidget.prototype.getValue = function() {
 };
 
 export default DropdownParameterWidget;
+// </nowiki>

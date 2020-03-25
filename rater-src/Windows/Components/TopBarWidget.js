@@ -1,6 +1,7 @@
 import appConfig from "../../config";
 import SuggestionLookupTextInputWidget from "./SuggestionLookupTextInputWidget";
 import {getBannerNames} from "../../getBanners";
+// <nowiki>
 
 function TopBarWidget( config ) {
 	// Configuration initialization
@@ -187,3 +188,4 @@ TopBarWidget.prototype.setDisabled = function(disable) {
 };
 
 export default TopBarWidget;
+// </nowiki>

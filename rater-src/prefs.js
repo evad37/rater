@@ -2,6 +2,7 @@ import API from "./api";
 import { isAfterDate } from "./util";
 import config from "./config";
 import * as cache from "./cache";
+// <nowiki>
 
 const prefsPage = `User:${mw.config.get("wgUserName")}/raterPrefs.json`;
 
@@ -73,3 +74,4 @@ const setPrefs = function(updatedPrefs) {
 
 export default ({get: getPrefs, set: setPrefs});
 export { getPrefs, setPrefs };
+// </nowiki>

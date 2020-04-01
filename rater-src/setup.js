@@ -99,7 +99,7 @@ var setupRater = function(clickEvent) {
 			function(rawPage) {
 				var result = {};
 				// Check if page is a redirect (if so, get redirection target or boolean true)
-				result.redirect = /^\s*#REDIRECT/i.test(rawPage)
+				result.redirectTarget = /^\s*#REDIRECT/i.test(rawPage)
 					? rawPage.slice(rawPage.indexOf("[[")+2, rawPage.indexOf("]]")) || true 
 					: false;
 				// Check if article is a disambiguation page
@@ -110,6 +110,10 @@ var setupRater = function(clickEvent) {
 				result.stubtag = subjectIsArticle
 					? /(?:\{\{\s*|-| |\w)stub[^{]*}}/i.test(rawPage)
 					: null;
+				// Check for GA, FA, FL status
+				result.isGA = /{{\s*([Gg]ood[ _][Aa]rticle|[Gg]A[ _](?:article|icon))\s*(?:}}|\|)/.test(rawPage);
+				result.isFA = !result.isGA && /{{\s*[Ff]eatured(?:[ _]?article|small)?(?:}}|\|)/.test(rawPage);
+				result.isFL = !result.isFA && /{{\s*[Ff]eatured[ _]list(?:}}|\|)/.test(rawPage);
 				return result;
 			},
 			// Failure (ignored)
@@ -152,9 +156,17 @@ var setupRater = function(clickEvent) {
 					if ( data.error ) {
 						return $.Deferred().reject(data.error.type, data.error.message);
 					}
+					const prediction = data.score.prediction;
+					const probabilities = data.score.probability;
+					if (prediction === "FA" || prediction === "GA") {
+						return {
+							prediction: "B or higher",
+							probability: ((probabilities.FA + probabilities.GA + probabilities.B)*100).toFixed(1)+"%"
+						};
+					}
 					return {
-						"prediction": data.score.prediction,
-						"probability": (data.score.probability[ data.score.prediction ]*100).toFixed(1)+"%"
+						prediction,
+						probability: (probabilities[ prediction ]*100).toFixed(1)+"%"
 					};
 				});
 		});
@@ -197,11 +209,9 @@ var setupRater = function(clickEvent) {
 				isArticle: subjectIsArticle
 			};
 			if (subjectPageCheck) {
-				result.redirectTarget = subjectPageCheck.redirect;
-				result.disambig = subjectPageCheck.disambig;
-				result.stubtag = subjectPageCheck.stubtag;
+				result = { ...result, ...subjectPageCheck };
 			}
-			if (oresPredicition) {
+			if (oresPredicition && !subjectPageCheck.isGA && !subjectPageCheck.isFA && !subjectPageCheck.isFL) {
 				result.ores = oresPredicition;
 			}
 			windowManager.closeWindow("loadDialog", result);

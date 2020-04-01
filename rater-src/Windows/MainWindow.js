@@ -97,7 +97,7 @@ MainWindow.prototype.initialize = function () {
 
 	/* --- FOOTER --- */
 	this.oresLabel = new OO.ui.LabelWidget({
-		$element: $("<span style='float:right; padding: 10px; max-width: 33.33%; text-align: center;'>"),
+		$element: $("<span style='float:right; padding: 10px; max-width: 50%; text-align: center;'>"),
 		label: $("<span>").append(
 			$("<a>")
 				.attr({"href":mw.util.getUrl("mw:ORES"), "target":"_blank"})
@@ -329,9 +329,16 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 				this.pagetypeLabel.setLabel("Redirect page").toggle(true);
 			} else if (this.pageInfo.isDisambig) {
 				this.pagetypeLabel.setLabel("Disambiguation page").toggle(true);
+			} else if (this.pageInfo.isArticle && data.isGA) {
+				this.pagetypeLabel.setLabel("Good article").toggle(true);
+			} else if (this.pageInfo.isArticle && data.isFA) {
+				this.pagetypeLabel.setLabel("Featured article").toggle(true);
+			} else if (this.pageInfo.isArticle && data.isFL) {
+				this.pagetypeLabel.setLabel("Featured list").toggle(true);
 			} else if (data.ores) {
 				this.oresClass = data.ores.prediction;
 				this.oresLabel.toggle(true).$element.find(".oresPrediction").append(
+					"Prediction: ",
 					$("<strong>").text(data.ores.prediction),
 					"&nbsp;(" + data.ores.probability + ")"
 				);

@@ -305,7 +305,9 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 			};
 			// Set up edit mode banners
 			this.actions.setMode("edit");
-			this.bannerList.oresClass = data.ores && data.ores.prediction;
+			this.bannerList.oresClass = (data.isArticle && data.isList)
+				? "List"
+				: data.ores && data.ores.prediction;
 			this.bannerList.pageInfo = this.pageInfo;
 			this.bannerList.addItems(
 				data.banners.map( bannerTemplate => new BannerWidget(
@@ -335,6 +337,8 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 				this.pagetypeLabel.setLabel("Featured article").toggle(true);
 			} else if (this.pageInfo.isArticle && data.isFL) {
 				this.pagetypeLabel.setLabel("Featured list").toggle(true);
+			} else if (this.pageInfo.isArticle && data.isList) {
+				this.pagetypeLabel.setLabel("List article").toggle(true);
 			} else if (data.ores) {
 				this.oresClass = data.ores.prediction;
 				this.oresLabel.toggle(true).$element.find(".oresPrediction").append(

@@ -102,18 +102,19 @@ var setupRater = function(clickEvent) {
 				result.redirectTarget = /^\s*#REDIRECT/i.test(rawPage)
 					? rawPage.slice(rawPage.indexOf("[[")+2, rawPage.indexOf("]]")) || true 
 					: false;
+				if (!subjectIsArticle) {
+					return result;
+				}
 				// Check if article is a disambiguation page
-				result.disambig = subjectIsArticle
-					? /{{[^|:}]*(?:disambiguation|disambig|dab|Mil-unit-dis|Numberdis|hndis|geodis)[^{]*}}/i.test(rawPage)
-					: null;
+				result.disambig = /{{[^|:}]*(?:disambiguation|disambig|dab|Mil-unit-dis|Numberdis|hndis|geodis)[^{]*}}/i.test(rawPage);
 				// Check if article is tagged as a stub
-				result.stubtag = subjectIsArticle
-					? /(?:\{\{\s*|-| |\w)stub[^{]*}}/i.test(rawPage)
-					: null;
+				result.stubtag = /(?:\{\{\s*|-| |\w)stub[^{]*}}/i.test(rawPage);
 				// Check for GA, FA, FL status
 				result.isGA = /{{\s*([Gg]ood[ _][Aa]rticle|[Gg]A[ _](?:article|icon))\s*(?:}}|\|)/.test(rawPage);
 				result.isFA = !result.isGA && /{{\s*[Ff]eatured(?:[ _]?article|small)?(?:}}|\|)/.test(rawPage);
 				result.isFL = !result.isFA && /{{\s*[Ff]eatured[ _]list(?:}}|\|)/.test(rawPage);
+				// Check if article is a list (based on page name)
+				result.isList = !result.isFL && /^Lists? of/.test(subjectPage.getPrefixedText());
 				return result;
 			},
 			// Failure (ignored)

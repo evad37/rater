@@ -166,7 +166,7 @@ BannerListWidget.prototype.autofillClassRatings = function() {
 	} else if (uniqueClassRatings.length === 0 && this.preferences.autofillClassFromOres && this.oresClass) {
 		// Don't autofill above C-class
 		switch(this.oresClass) {
-		case "Stub": case "Start": case "C":
+		case "Stub": case "Start": case "C": case "List":
 			autoClass = this.oresClass;
 		}
 	} else {

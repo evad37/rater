@@ -1,5 +1,5 @@
 // <nowiki>
-var version = "2.5.0";
+var version = "2.5.1";
 
 // A global object that stores all the page and user configuration and settings
 var config = {

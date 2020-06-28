@@ -1,5 +1,6 @@
 // <nowiki>
-var version = "2.5.1";
+const packagejson = require("../package.json");
+var version = packagejson.version;
 
 // A global object that stores all the page and user configuration and settings
 var config = {

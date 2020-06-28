@@ -93,33 +93,40 @@ var setupRater = function(clickEvent) {
 	});
 
 	// Check subject page features (task 5) - but don't error out if request fails
-	var subjectPageCheckPromise = API.getRaw(subjectPage.getPrefixedText())
-		.then(
-			// Success
-			function(rawPage) {
-				var result = {};
-				// Check if page is a redirect (if so, get redirection target or boolean true)
-				result.redirectTarget = /^\s*#REDIRECT/i.test(rawPage)
-					? rawPage.slice(rawPage.indexOf("[[")+2, rawPage.indexOf("]]")) || true 
-					: false;
-				if (!subjectIsArticle) {
-					return result;
-				}
-				// Check if article is a disambiguation page
-				result.disambig = /{{[^|:}]*(?:disambiguation|disambig|dab|Mil-unit-dis|Numberdis|hndis|geodis)[^{]*}}/i.test(rawPage);
-				// Check if article is tagged as a stub
-				result.stubtag = /(?:\{\{\s*|-| |\w)stub[^{]*}}/i.test(rawPage);
-				// Check for GA, FA, FL status
-				result.isGA = /{{\s*([Gg]ood[ _][Aa]rticle|[Gg]A[ _](?:article|icon))\s*(?:}}|\|)/.test(rawPage);
-				result.isFA = !result.isGA && /{{\s*[Ff]eatured(?:[ _]?article|small)?(?:}}|\|)/.test(rawPage);
-				result.isFL = !result.isFA && /{{\s*[Ff]eatured[ _]list(?:}}|\|)/.test(rawPage);
-				// Check if article is a list (based on page name)
-				result.isList = !result.isFL && /^Lists? of/.test(subjectPage.getPrefixedText());
-				return result;
-			},
-			// Failure (ignored)
-			function() { return null; }
-		);
+	var subjectPageCheckPromise = API.get({
+		action: "query",
+		format: "json",
+		formatversion: "2",
+		prop: "categories",
+		titles: subjectPage.getPrefixedText(),
+		redirects: 1,
+		clcategories: [
+			"Category:All disambiguation pages",
+			"Category:All stub articles",
+			"Category:Good articles",
+			"Category:Featured articles",
+			"Category:Featured lists"
+		]
+	}).then(response => {
+		if ( !response || !response.query || !response.query.pages ) {
+			return null;
+		}
+		const redirectTarget = response.query.redirects && response.query.redirects[0].to || false;
+		if ( redirectTarget || !subjectIsArticle ) {
+			return { redirectTarget };
+		}
+		const page = response.query.pages[0];
+		const hasCategory = category => page.categories && page.categories.find(cat => cat.title === "Category:"+category);
+		return {
+			redirectTarget,
+			disambig: hasCategory("All disambiguation pages"),
+			stubtag: hasCategory("All stub articles"),
+			isGA: hasCategory("Good articles"),
+			isFA: hasCategory("Featured articles"),
+			isFL: hasCategory("Featured lists"),
+			isList: !hasCategory("Featured lists") && /^Lists? of/.test(subjectPage.getPrefixedText())
+		};
+	}).catch(() => null); // Failure ignored
 
 	// Retrieve rating from ORES (task 6, only needed for articles)
 	var shouldGetOres = ( subjectIsArticle ); // TODO: Don't need to get ORES for redirects or disambigs
@@ -212,7 +219,7 @@ var setupRater = function(clickEvent) {
 			if (subjectPageCheck) {
 				result = { ...result, ...subjectPageCheck };
 			}
-			if (oresPredicition && !subjectPageCheck.isGA && !subjectPageCheck.isFA && !subjectPageCheck.isFL) {
+			if (oresPredicition && subjectPageCheck && !subjectPageCheck.isGA && !subjectPageCheck.isFA && !subjectPageCheck.isFL) {
 				result.ores = oresPredicition;
 			}
 			windowManager.closeWindow("loadDialog", result);

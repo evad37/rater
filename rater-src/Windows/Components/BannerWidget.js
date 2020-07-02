@@ -4,6 +4,7 @@ import DropdownParameterWidget from "./DropdownParameterWidget";
 import SuggestionLookupTextInputWidget from "./SuggestionLookupTextInputWidget";
 import { filterAndMap, classMask, importanceMask } from "../../util";
 import {Template, getWithRedirectTo} from "../../Template";
+import HorizontalLayoutWidget from "./HorizontalLayoutWidget";
 // <nowiki>
 
 function BannerWidget( template, config ) {
@@ -181,7 +182,7 @@ function BannerWidget( template, config ) {
 		icon: "add",
 		flags: "progressive"
 	}).setDisabled(true);
-	this.addParameterControls = new OO.ui.HorizontalLayout( {
+	this.addParameterControls = new HorizontalLayoutWidget( {
 		items: [
 			this.addParameterNameInput,
 			new OO.ui.LabelWidget({label:"="}),
@@ -189,16 +190,12 @@ function BannerWidget( template, config ) {
 			this.addParameterButton
 		]
 	} );
-	// Hacks to make this HorizontalLayout go inside a FieldLayout
-	this.addParameterControls.getInputId = () => false;
-	this.addParameterControls.isDisabled = () => false;
-	this.addParameterControls.simulateLabelClick = () => true;
 
 	this.addParameterLayout = new OO.ui.FieldLayout(this.addParameterControls, {
 		label: "Add parameter:",
 		align: "top"
 	}).toggle(false);
-	// And another hack
+	// A hack to make messages appear on their own line
 	this.addParameterLayout.$element.find(".oo-ui-fieldLayout-messages").css({
 		"clear": "both",
 		"padding-top": 0

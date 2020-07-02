@@ -1,4 +1,5 @@
 import { normaliseYesNo, filterAndMap } from "../../util";
+import HorizontalLayoutWidget from "./HorizontalLayoutWidget";
 // <nowiki>
 
 function ParameterWidget( parameter, paramData, config ) {
@@ -107,17 +108,13 @@ function ParameterWidget( parameter, paramData, config ) {
 		"margin-right": 0
 	});
 
-	this.editLayoutControls = new OO.ui.HorizontalLayout({
+	this.editLayoutControls = new HorizontalLayoutWidget({
 		items: [
 			this.input,
 			this.editButtonControls
 		],
 		//$element: $("<div style='width: 48%;margin:0;'>")
 	});
-	// Hacks to make this HorizontalLayout go inside a FieldLayout
-	this.editLayoutControls.getInputId = () => false;
-	this.editLayoutControls.isDisabled = () => false;
-	this.editLayoutControls.simulateLabelClick = () => true;
 
 	this.editLayout = new OO.ui.FieldLayout( this.editLayoutControls, {
 		label: this.name + " =",

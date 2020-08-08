@@ -56,7 +56,9 @@ var setupRater = function(clickEvent) {
 							: template.getTitle().getMainText();
 						return allBanners.withRatings.includes(mainText) || 
 						allBanners.withoutRatings.includes(mainText) ||
-						allBanners.wrappers.includes(mainText);
+						allBanners.wrappers.includes(mainText) ||
+						allBanners.notWPBM.includes(mainText) ||
+						allBanners.inactive.includes(mainText);
 					},
 					// Set additional properties if needed
 					template => {
@@ -71,6 +73,9 @@ var setupRater = function(clickEvent) {
 							allBanners.notWPBM.includes(mainText)
 						) {
 							template.withoutRatings = true;
+						}
+						if ( allBanners.inactive.includes(mainText) ) {
+							template.inactiveProject = true;
 						}
 						return template;
 					}

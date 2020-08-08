@@ -27,7 +27,7 @@ var getListOfBannersFromApi = function() {
 
 	var categories = [
 		{
-			title:" Category:WikiProject banners with quality assessment",
+			title: "Category:WikiProject banners with quality assessment",
 			abbreviation: "withRatings",
 			banners: [],
 			processed: $.Deferred()
@@ -50,7 +50,12 @@ var getListOfBannersFromApi = function() {
 			banners: [],
 			processed: $.Deferred()
 		},
-
+		{
+			title: "Category:Inactive WikiProject banners",
+			abbreviation: "inactive",
+			banners: [],
+			processed: $.Deferred()
+		}
 	];
 
 	var processQuery = function(result, catIndex) {
@@ -134,10 +139,10 @@ var getBannersFromCache = function() {
 var getBannerNames = () => getBannersFromCache()
 	.then( banners => {
 		// Ensure all keys exist
-		if (!banners.withRatings || !banners.withoutRatings || !banners.wrappers || !banners.notWPBM) {
+		if (!banners.withRatings || !banners.withoutRatings || !banners.wrappers || !banners.notWPBM || !banners.inactive) {
 			getListOfBannersFromApi().then(cacheBanners);
 			return $.extend(
-				{ withRatings: [], withoutRatings: [], wrappers: [], notWPBM: [] },
+				{ withRatings: [], withoutRatings: [], wrappers: [], notWPBM: [], inactive: [] },
 				banners
 			);
 		}
@@ -151,5 +156,5 @@ var getBannerNames = () => getBannersFromCache()
 		return bannersPromise;
 	} );
 
-export {getBannerNames};
+export { getBannerNames };
 // </nowiki>

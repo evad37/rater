@@ -32,6 +32,7 @@ function BannerWidget( template, config ) {
 	this.changed = template.parameters.some(parameter => parameter.autofilled); // initially false, unless some parameters were autofilled
 	this.hasClassRatings = template.classes && template.classes.length;
 	this.hasImportanceRatings = template.importances && template.importances.length;
+	this.inactiveProject = template.inactiveProject;
 
 	/* --- TITLE AND RATINGS --- */
 
@@ -58,7 +59,7 @@ function BannerWidget( template, config ) {
 	} );
 
 	this.mainLabelPopupButton = new OO.ui.PopupButtonWidget( {
-		label: "{{" + template.getTitle().getMainText() + "}}",
+		label: `{{${template.getTitle().getMainText()}}}${this.inactiveProject ? " (inactive)" : ""}`,
 		$element: $("<span style='display:inline-block;width:48%;margin-right:0;padding-right:8px'>"),
 		$overlay: this.$overlay,
 		indicator:"down",
@@ -444,7 +445,7 @@ BannerWidget.prototype.bypassRedirect = function() {
 	// Store the bypassed name
 	this.bypassedName = this.name;
 	// Update title label
-	this.mainLabelPopupButton.setLabel("{{" + this.redirectTargetMainText + "}}");
+	this.mainLabelPopupButton.setLabel(`{{${this.redirectTargetMainText}}}${this.inactiveProject ? " (inactive)" : ""}`);
 	// Update properties
 	this.name = this.redirectTargetMainText;
 	this.mainText = this.redirectTargetMainText;

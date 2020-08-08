@@ -49,6 +49,13 @@ function TopBarWidget( config ) {
 					name: bannerName,
 					withoutRatings: true
 				}
+			})),
+			...banners.inactive.map(bannerName => ({
+				label: bannerName.replace("WikiProject ", "") + " [inactive]",
+				data: {
+					name: bannerName,
+					withoutRatings: true
+				}
 			}))
 		])
 		.then(bannerOptions => this.searchBox.setSuggestions(bannerOptions));

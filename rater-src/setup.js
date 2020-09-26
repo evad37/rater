@@ -133,7 +133,7 @@ var setupRater = function(clickEvent) {
 		};
 	}).catch(() => null); // Failure ignored
 
-	// Retrieve rating from ORES (task 6, only needed for articles)
+	// Retrieve rating from ORES (task 6, only needed for articles) - but don't error out if request fails
 	var shouldGetOres = ( subjectIsArticle ); // TODO: Don't need to get ORES for redirects or disambigs
 	if ( shouldGetOres ) {
 		var latestRevIdPromise = !currentPage.isTalkPage()
@@ -181,7 +181,7 @@ var setupRater = function(clickEvent) {
 						prediction,
 						probability: (probabilities[ prediction ]*100).toFixed(1)+"%"
 					};
-				});
+				}).catch(() => null); // Failure ignored;
 		});
 	}
 

@@ -55,6 +55,12 @@ var getListOfBannersFromApi = function() {
 			abbreviation: "inactive",
 			banners: [],
 			processed: $.Deferred()
+		},
+		{
+			title: "Category:Wrapper templates for WikiProject Women in Red",
+			abbreviation: "wir",
+			banners: [],
+			processed: $.Deferred()
 		}
 	];
 
@@ -139,10 +145,10 @@ var getBannersFromCache = function() {
 var getBannerNames = () => getBannersFromCache()
 	.then( banners => {
 		// Ensure all keys exist
-		if (!banners.withRatings || !banners.withoutRatings || !banners.wrappers || !banners.notWPBM || !banners.inactive) {
+		if (!banners.withRatings || !banners.withoutRatings || !banners.wrappers || !banners.notWPBM || !banners.inactive || !banners.wir) {
 			getListOfBannersFromApi().then(cacheBanners);
 			return $.extend(
-				{ withRatings: [], withoutRatings: [], wrappers: [], notWPBM: [], inactive: [] },
+				{ withRatings: [], withoutRatings: [], wrappers: [], notWPBM: [], inactive: [], wir: [] },
 				banners
 			);
 		}

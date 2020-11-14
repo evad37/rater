@@ -58,7 +58,8 @@ var setupRater = function(clickEvent) {
 						allBanners.withoutRatings.includes(mainText) ||
 						allBanners.wrappers.includes(mainText) ||
 						allBanners.notWPBM.includes(mainText) ||
-						allBanners.inactive.includes(mainText);
+						allBanners.inactive.includes(mainText) ||
+						allBanners.wir.includes(mainText);
 					},
 					// Set additional properties if needed
 					template => {
@@ -70,7 +71,7 @@ var setupRater = function(clickEvent) {
 						}
 						if (
 							allBanners.withoutRatings.includes(mainText) ||
-							allBanners.notWPBM.includes(mainText)
+							allBanners.wir.includes(mainText)
 						) {
 							template.withoutRatings = true;
 						}

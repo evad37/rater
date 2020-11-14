@@ -27,7 +27,9 @@ function TopBarWidget( config ) {
 		.then(banners => [
 			...banners.withRatings.map(bannerName => ({
 				label: bannerName.replace("WikiProject ", ""),
-				data: {name: bannerName}
+				data: {
+					name: bannerName
+				}
 			})),
 			...banners.withoutRatings.map(bannerName => ({
 				label: bannerName.replace("WikiProject ", ""),
@@ -46,12 +48,18 @@ function TopBarWidget( config ) {
 			...banners.notWPBM.map(bannerName => ({
 				label: bannerName.replace("WikiProject ", ""),
 				data: {
-					name: bannerName,
-					withoutRatings: true
+					name: bannerName
 				}
 			})),
 			...banners.inactive.map(bannerName => ({
 				label: bannerName.replace("WikiProject ", "") + " [inactive]",
+				data: {
+					name: bannerName,
+					withoutRatings: true
+				}
+			})),
+			...banners.wir.map(bannerName => ({
+				label: bannerName + " [Women In Red meetup/initiative]",
 				data: {
 					name: bannerName,
 					withoutRatings: true

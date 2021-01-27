@@ -1,7 +1,7 @@
 // <nowiki>
 
-// Attribution: Diff styles from <https://en.wikipedia.org/wiki/Wikipedia:AutoWikiBrowser/style.css>
-const styles = `table.diff, td.diff-otitle, td.diff-ntitle { background-color: white; }
+// Attribution: Diff styles based on <https://en.wikipedia.org/wiki/Wikipedia:AutoWikiBrowser/style.css>
+const styles = `table.diff, td.diff-otitle, td.diff-ntitle { table-layout: auto !important;; }
 td.diff-otitle, td.diff-ntitle { text-align: center; }
 td.diff-marker { text-align: right; font-weight: bold; font-size: 1.25em; }
 td.diff-lineno { font-weight: bold; }

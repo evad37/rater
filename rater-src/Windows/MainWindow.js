@@ -483,7 +483,7 @@ MainWindow.prototype.getActionProcess = function ( action ) {
 					if ( !result || !result.compare || !result.compare["*"] ) {
 						return $.Deferred().reject("Empty result");
 					}
-					var $diff = $("<table>").css("width", "100%").append(
+					var $diff = $("<table>").addClass("diff").css("width", "100%").append(
 						$("<tr>").append(
 							$("<th>").attr({"colspan":"2", "scope":"col"}).css("width", "50%").text("Latest revision"),
 							$("<th>").attr({"colspan":"2", "scope":"col"}).css("width", "50%").text("New text")

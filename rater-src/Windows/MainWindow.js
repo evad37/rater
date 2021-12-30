@@ -582,7 +582,7 @@ MainWindow.prototype.onSearchSelect = function(data) {
 	var confirmText;
 	if (!/^[Ww](?:P|iki[Pp]roject)/.test(name)) {
 		confirmText = new OO.ui.HtmlSnippet(
-			"{{" + name + "}} is not a recognised WikiProject banner.<br/>Do you want to continue?"
+			"{{" + mw.html.escape(name) + "}} is not a recognised WikiProject banner.<br/>Do you want to continue?"
 		);
 	} else if (name === "WikiProject Disambiguation" && $("#ca-talk.new").length !== 0 && this.bannerList.items.length === 0) {
 		// eslint-disable-next-line no-useless-escape

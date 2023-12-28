@@ -326,6 +326,7 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 					shellTemplateBanner.shellParam1Value
 				).trim().replace(/\n+/g, "\n");
 			}
+			this.bannerList.addShellTemplateIfNeeeded();
 			// Show page type, or ORES prediction, if available
 			if (this.pageInfo.redirect) {
 				this.pagetypeLabel.setLabel("Redirect page").toggle(true);
@@ -607,9 +608,14 @@ MainWindow.prototype.onSearchSelect = function(data) {
 };
 
 MainWindow.prototype.onSetClasses = function(classVal) {
+	const shellTemplate = this.bannerList.items.find(banner => banner.isShellTemplate);
+	if (shellTemplate) {
+		shellTemplate.classDropdown.getMenu().selectItemByData(classVal);
+		shellTemplate.classDropdown.setAutofilled(false);
+	}
 	this.bannerList.items.forEach(banner => {
-		if (banner.hasClassRatings) {
-			banner.classDropdown.getMenu().selectItemByData(classVal);
+		if (banner.hasClassRatings &&!banner.isShellTemplate) {
+			banner.classDropdown.getMenu().selectItemByData(shellTemplate ? null : classVal);
 			banner.classDropdown.setAutofilled(false);
 		}
 	});
@@ -688,7 +694,7 @@ MainWindow.prototype.makeEditSummary = function() {
 	// Overall class/importance, if all the same
 	const allClasses = uniqueArray(
 		filterAndMap(this.bannerList.items,
-			banner => banner.hasClassRatings,
+			banner => banner.hasClassRatings || banner.isShellTemplate,
 			banner => banner.classDropdown.getValue()
 		)
 	);

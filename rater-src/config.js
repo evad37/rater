@@ -15,7 +15,7 @@ var config = {
 		"autostart": false,
 		"autostartRedirects": false,
 		"autostartNamespaces": [0],
-		"minForShell": 3,
+		"minForShell": 1,
 		"bypassRedirects": true,
 		"autofillClassFromOthers": true,
 		"autofillClassFromOres": true,
@@ -132,6 +132,14 @@ var config = {
 				"Low",
 				"Bottom",
 				"NA"
+			]
+		},
+		"WikiProject Video games": {
+			classes: [
+				"FA","FL","FM","GA","B","C","Start","Stub","List","Category","Draft","File","Portal","Project","Template","Disambig","Redirect"
+			],
+			importances: [
+				"Top","High","Mid","Low","NA"
 			]
 		}
 	},

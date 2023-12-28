@@ -97,6 +97,33 @@ BannerListWidget.prototype.syncShellTemplateWithBiographyBanner = function( biog
 	});
 };
 
+BannerListWidget.prototype.addShellTemplateIfNeeeded = function () {
+	if (
+		!this.items.some(banner => banner.isShellTemplate)
+	) {
+		BannerWidget.newFromTemplateName(
+			config.shellTemplates[0],
+			{withoutRatings: true},
+			{preferences: this.preferences, isArticle: this.pageInfo.isArticle}
+		).then(shellBannerWidget => {
+			OO.ui.mixin.GroupElement.prototype.addItems.call( this, [shellBannerWidget], 0 );
+			var biographyBanner =  this.items.find(
+				banner => banner.mainText === "WikiProject Biography" || banner.redirectTargetMainText === "WikiProject Biography"
+			);
+			if (biographyBanner) {
+				this.syncShellTemplateWithBiographyBanner(biographyBanner);
+			}
+			// Autofill ratings (if able to)
+			this.autofillClassRatings({forBannerShell: true});
+			// emit updatedSize event 
+			this.onUpdatedSize();
+		});
+	}
+
+	return this;
+};
+
+
 BannerListWidget.prototype.addItems = function ( items, index ) {
 
 	if ( items.length === 0 ) {
@@ -106,30 +133,10 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 	// Call mixin method to do the adding
 	OO.ui.mixin.GroupElement.prototype.addItems.call( this, items, index );
 
-	// Add a bannershell template, but only if more than two banners and there isn't already one 
-	if (
-		this.items.length >= this.preferences.minForShell &&
-		!this.items.some(banner => banner.isShellTemplate)
-	) {
-		BannerWidget.newFromTemplateName(
-			config.shellTemplates[0],
-			{withoutRatings: true},
-			{preferences: this.preferences}
-		).then(shellBannerWidget => {
-			OO.ui.mixin.GroupElement.prototype.addItems.call( this, [shellBannerWidget], 0 );
-			var biographyBanner =  this.items.find(
-				banner => banner.mainText === "WikiProject Biography" || banner.redirectTargetMainText === "WikiProject Biography"
-			);
-			if (biographyBanner) {
-				this.syncShellTemplateWithBiographyBanner(biographyBanner);
-			}
-			// emit updatedSize event 
-			this.onUpdatedSize();
-		});
-	}
-
 	// Autofill ratings (if able to, and if enabled in preferences)
-	this.autofillClassRatings();
+	if (!this.items.some(banner => banner.isShellTemplate)) {
+		this.autofillClassRatings();
+	}
 	this.autofillImportanceRatings();
 
 	// emit updatedSize event 
@@ -138,9 +145,10 @@ BannerListWidget.prototype.addItems = function ( items, index ) {
 	return this;
 };
 
-BannerListWidget.prototype.autofillClassRatings = function() {
+BannerListWidget.prototype.autofillClassRatings = function(config) {
+	config = config || {};
 	// Only autofill if set in preferences
-	if (!this.preferences.autofillClassFromOthers && !this.preferences.autofillClassFromOres) {
+	if (!this.preferences.autofillClassFromOthers && !this.preferences.autofillClassFromOres && !config.forBannerShell) {
 		return;
 	}
 	// Check what banners already have
@@ -161,7 +169,7 @@ BannerListWidget.prototype.autofillClassRatings = function() {
 	}
 	// Determine what to autofill with
 	let autoClass;
-	if (uniqueClassRatings.length === 1 && this.preferences.autofillClassFromOthers) {
+	if (uniqueClassRatings.length === 1 && (this.preferences.autofillClassFromOthers || config.forBannerShell)) {
 		autoClass = uniqueClassRatings[0];
 	} else if (uniqueClassRatings.length === 0 && this.preferences.autofillClassFromOres && this.oresClass) {
 		// Don't autofill above C-class
@@ -175,11 +183,15 @@ BannerListWidget.prototype.autofillClassRatings = function() {
 	}
 	// Do the autofilling
 	this.items.forEach(banner => {
-		if (!banner.hasClassRatings) {
+		if (!banner.hasClassRatings && !banner.isShellTemplate) {
 			return;
 		}
 		const classItem = banner.classDropdown.getMenu().findSelectedItem();
-		if (classItem && classItem.getData()) {
+		if (classItem && classItem.getData() && !config.forBannerShell) {
+			return;
+		}
+		if (config.forBannerShell && !banner.isShellTemplate && classItem.getData() === autoClass) {
+			banner.classDropdown.getMenu().selectItemByData(null);
 			return;
 		}
 		banner.classDropdown.getMenu().selectItemByData(autoClass);

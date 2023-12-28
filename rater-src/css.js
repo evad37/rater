@@ -44,6 +44,14 @@ html body.rater-mainWindow-open .oo-ui-windowManager-modal > .oo-ui-dialog.oo-ui
     z-index: 110;
     transition: all 0.25s ease-out 0s, transform 0s !important
 }
+` + 
+// Ensure close dialog is visible
+`html body.rater-mainWindow-open #mw-teleport-target {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right:0;
+}
 `;
 
 export default styles;

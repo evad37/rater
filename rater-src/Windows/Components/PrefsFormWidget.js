@@ -27,10 +27,6 @@ function PrefsFormWidget( config ) {
 			input: new mw.widgets.NamespacesMultiselectWidget(),
 			label: "Autostart in these namespaces"
 		},
-		"minForShell": {
-			input: new OO.ui.NumberInputWidget( { "min": 2 } ),
-			label: "Minimum number of banners for WikiProject banner shell"
-		},
 		"bypassRedirects": {
 			input: new OO.ui.ToggleSwitchWidget(),
 			label: "Bypass redirects to banners"

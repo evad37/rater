@@ -480,9 +480,12 @@ Template.prototype.setClassesAndImportances = function() {
 	var parsed = $.Deferred();
 
 	// Don't re-parse if already parsed; no need to parse shell templates or banners without ratings
-	if ( (this.classes && this.importances) || this.isShellTemplate() || this.withoutRatings ) {
+	if ( this.isShellTemplate() ) {
+		this.classes = [...config.bannerDefaults.classes];
 		return parsed.resolve();
-	}
+	} else if ( (this.classes && this.importances) || this.withoutRatings ) {
+		return parsed.resolve();
+	} 
 
 	var mainText = this.getTitle().getMainText();
 

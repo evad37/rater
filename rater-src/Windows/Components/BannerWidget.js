@@ -5,6 +5,7 @@ import SuggestionLookupTextInputWidget from "./SuggestionLookupTextInputWidget";
 import { filterAndMap, classMask, importanceMask } from "../../util";
 import {Template, getWithRedirectTo} from "../../Template";
 import HorizontalLayoutWidget from "./HorizontalLayoutWidget";
+import globalConfig from "../../config";
 // <nowiki>
 
 function BannerWidget( template, config ) {
@@ -77,7 +78,7 @@ function BannerWidget( template, config ) {
 		.find("span.oo-ui-labelElement-label").css({"white-space":"normal"});
 
 	// Rating dropdowns
-	if (this.hasClassRatings) {
+	if (this.isShellTemplate) {
 		this.classDropdown = new DropdownParameterWidget( {
 			label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Class</span>"),
 			menu: {
@@ -85,6 +86,27 @@ function BannerWidget( template, config ) {
 					new OO.ui.MenuOptionWidget( {
 						data: null,
 						label: new OO.ui.HtmlSnippet(`<span style="color:#777">(${config.isArticle ? "no class" : "auto-detect"})</span>`)
+					} ),
+					...globalConfig.bannerDefaults.classes.map( classname =>
+						new OO.ui.MenuOptionWidget( {
+							data: classname,
+							label: classname
+						} )
+					)
+				],
+			},
+			$overlay: this.$overlay,
+		} );
+		var shellClassParam = template.parameters.find(parameter => parameter.name === "class");
+		this.classDropdown.getMenu().selectItemByData( shellClassParam && classMask(shellClassParam.value) );
+	} else if (this.hasClassRatings) {
+		this.classDropdown = new DropdownParameterWidget( {
+			label: new OO.ui.HtmlSnippet("<span style=\"color:#777\">Class</span>"),
+			menu: {
+				items: [
+					new OO.ui.MenuOptionWidget( {
+						data: null,
+						label: new OO.ui.HtmlSnippet(`<span style="color:#777">(${config.isArticle ? "inherit from shell" : "auto-detect"})</span>`)
 					} ),
 					...template.classes.map( classname =>
 						new OO.ui.MenuOptionWidget( {
@@ -125,7 +147,7 @@ function BannerWidget( template, config ) {
 	this.titleLayout = new OO.ui.HorizontalLayout( {
 		items: [ this.mainLabelPopupButton ]
 	} );
-	if (this.hasClassRatings) {
+	if (this.hasClassRatings || this.isShellTemplate) {
 		this.titleLayout.addItems([ this.classDropdown ]);
 	}
 	if (this.hasImportanceRatings) {
@@ -142,7 +164,7 @@ function BannerWidget( template, config ) {
 					this.shellParam1Value = param.value;
 					return false;
 				}
-				return true;
+				return param.name !== "class";
 			}
 			return param.name !== "class" && param.name !== "importance";
 		},
@@ -459,14 +481,14 @@ BannerWidget.prototype.makeWikitext = function() {
 	}
 	var pipe = this.pipeStyle;
 	var equals = this.equalsStyle;
-	var classItem = this.hasClassRatings && this.classDropdown.getMenu().findSelectedItem();
+	var classItem = (this.hasClassRatings || this.isShellTemplate) && this.classDropdown.getMenu().findSelectedItem();
 	var classVal = classItem && classItem.getData();
 	var importanceItem = this.hasImportanceRatings && this.importanceDropdown.getMenu().findSelectedItem();
 	var importanceVal = importanceItem && importanceItem.getData();
 
 	return ("{{" +
 		this.name +
-		( this.hasClassRatings && classVal!=null ? `${pipe}class${equals}${classVal||""}` : "" ) +
+		( (this.hasClassRatings || this.isShellTemplate) && classVal!=null ? `${pipe}class${equals}${classVal||""}` : "" ) +
 		( this.hasImportanceRatings && importanceVal!=null ? `${pipe}importance${equals}${importanceVal||""}` : "" ) +
 		this.parameterList.getParameterItems()
 			.map(parameter => parameter.makeWikitext(pipe, equals))

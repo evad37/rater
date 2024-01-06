@@ -61,37 +61,52 @@ BannerListWidget.prototype.onBannerRemove = function ( banner ) {
 };
 
 BannerListWidget.prototype.syncShellTemplateWithBiographyBanner = function( biographyBanner ) {
-	var bannerShellTemplate = this.items.find(
+	biographyBanner = biographyBanner || this.items.find(
+		banner => banner.mainText === "WikiProject Biography" || banner.redirectTargetMainText === "WikiProject Biography"
+	);
+	if (!biographyBanner) return;
+
+	const bannerShellTemplate = this.items.find(
 		banner => banner.mainText === config.shellTemplates[0] || banner.redirectTargetMainText === config.shellTemplates[0]
 	);
 	if (!bannerShellTemplate) {
 		return;
 	}
 
-	const paramsToSync = ["living", "blpo", "activepol"];
+	const paramsToSync = [
+		{ name: "living", normalise: true },
+		{ name: "blpo", normalise: true },
+		{ name: "activepol", normalise: true },
+		{ name: "listas", normalise: false },
+	];
 	paramsToSync.forEach(paramToSync => {
-		let [biographyParam, shellParam] = [biographyBanner, bannerShellTemplate].map(banner =>
+		const [biographyParam, shellParam] = [biographyBanner, bannerShellTemplate].map(banner =>
 			banner.parameterList.getParameterItems()
 				.find(parameter =>
-					parameter.name === paramToSync ||
-					banner.paramAliases[parameter.name] === paramToSync
+					parameter.name === paramToSync.name ||
+					banner.paramAliases[parameter.name] === paramToSync.name
 				)
 		);
-		if (biographyParam && !shellParam) {
-			let index = bannerShellTemplate.addParameterLayout.isVisible()
+		if (!biographyParam) return;
+
+		const paramSyncValue = paramToSync.normalise ? normaliseYesNo(biographyParam.value) : biographyParam.value;
+		biographyParam.delete();
+
+		if (!shellParam && paramSyncValue) {
+			const index = bannerShellTemplate.addParameterLayout.isVisible()
 				? -1 // Insert at the very end
 				: bannerShellTemplate.parameterList.items.length-1; // Insert prior to the "add parameter" button
 			bannerShellTemplate.parameterList.addItems([
 				new ParameterWidget( {
-					"name": paramToSync,
-					"value": normaliseYesNo(biographyParam.value),
+					"name": paramToSync.name,
+					"value": paramSyncValue,
 					"autofilled": true
 				},
-				bannerShellTemplate.paramData && bannerShellTemplate.paramData[paramToSync]
+				bannerShellTemplate.paramData && bannerShellTemplate.paramData[paramToSync.name]
 				)
 			], index);
-		} else if (biographyParam && shellParam && normaliseYesNo(shellParam.value) !== normaliseYesNo(biographyParam.value)) {
-			shellParam.setValue( normaliseYesNo(biographyParam.value) );
+		} else if (!biographyParam.autofilled && paramSyncValue) {
+			shellParam.setValue( paramSyncValue );
 			shellParam.setAutofilled();
 		}
 	});
@@ -107,12 +122,6 @@ BannerListWidget.prototype.addShellTemplateIfNeeeded = function () {
 			{preferences: this.preferences, isArticle: this.pageInfo.isArticle}
 		).then(shellBannerWidget => {
 			OO.ui.mixin.GroupElement.prototype.addItems.call( this, [shellBannerWidget], 0 );
-			var biographyBanner =  this.items.find(
-				banner => banner.mainText === "WikiProject Biography" || banner.redirectTargetMainText === "WikiProject Biography"
-			);
-			if (biographyBanner) {
-				this.syncShellTemplateWithBiographyBanner(biographyBanner);
-			}
 			// Autofill ratings (if able to)
 			this.autofillClassRatings({forBannerShell: true});
 			// emit updatedSize event 

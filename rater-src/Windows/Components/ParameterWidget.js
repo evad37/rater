@@ -226,7 +226,7 @@ ParameterWidget.prototype.onCancelClick = function() {
 };
 
 ParameterWidget.prototype.onDeleteClick = function() {
-	this.emit("delete");
+	this.delete();
 };
 
 ParameterWidget.prototype.onCheckboxChange = function(isSelected, isIndeterminate) {
@@ -238,6 +238,10 @@ ParameterWidget.prototype.onCheckboxChange = function(isSelected, isIndeterminat
 	} else {
 		this.setValue(this.allowedValues[1]);
 	}
+};
+
+ParameterWidget.prototype.delete = function() {
+	this.emit("delete");
 };
 
 ParameterWidget.prototype.setValue = function(val) {

@@ -318,14 +318,14 @@ BannerWidget.prototype.onUpdatedSize = function() {
 BannerWidget.prototype.setChanged = function() {
 	this.changed = true;
 	this.emit("changed");
-};
-
-BannerWidget.prototype.onParameterChange = function() {
-	this.setChanged();
 	if (this.mainText === "WikiProject Biography" || this.redirectTargetMainText === "WikiProject Biography") {
 		// Emit event so BannerListWidget can update the banner shell template (if present)
 		this.emit("biographyBannerChange");		
 	}
+};
+
+BannerWidget.prototype.onParameterChange = function() {
+	this.setChanged();
 	this.updateAddParameterNameSuggestions();
 };
 

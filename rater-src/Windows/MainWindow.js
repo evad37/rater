@@ -326,7 +326,8 @@ MainWindow.prototype.getSetupProcess = function ( data ) {
 					shellTemplateBanner.shellParam1Value
 				).trim().replace(/\n+/g, "\n");
 			}
-			this.bannerList.addShellTemplateIfNeeeded();
+			this.bannerList.addShellTemplateIfNeeeded()
+				.syncShellTemplateWithBiographyBanner();
 			// Show page type, or ORES prediction, if available
 			if (this.pageInfo.redirect) {
 				this.pagetypeLabel.setLabel("Redirect page").toggle(true);

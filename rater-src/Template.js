@@ -523,7 +523,7 @@ Template.prototype.setClassesAndImportances = function() {
 	
 	return API.get({
 		action: "parse",
-		title: "Talk:Sandbox",
+		title: "Talk:Wikipedia",
 		text: wikitextToParse,
 		prop: "categorieshtml"
 	})
